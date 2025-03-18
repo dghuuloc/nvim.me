@@ -143,7 +143,7 @@ local config = {
 
 -- require("jdtls").start_or_attach(config)
 
-vim.api.nvim_create_user_command("JdtServer",
+vim.api.nvim_create_user_command("JdtServiceStart",
     function()
         local status_ok, jdtls_result = pcall(require("jdtls").start_or_attach, config)
 
