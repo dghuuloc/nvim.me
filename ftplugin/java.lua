@@ -143,24 +143,17 @@ local config = {
 
 -- require("jdtls").start_or_attach(config)
 
-vim.api.nvim_create_user_command("JdtServiceStart",
+vim.api.nvim_create_user_command("JdtStart",
     function()
         local status_ok, jdtls_result = pcall(require("jdtls").start_or_attach, config)
-
-        -- JDTLS commands
-        vim.cmd([[command! -buffer -nargs=? -complete=custom,v:lua.require'jdtls'._complete_compile JdtCompile lua require('jdtls').compile(<f-args>)]])
-        vim.cmd([[command! -buffer JdtUpdateConfig lua require('jdtls').update_project_config()]])
-        vim.cmd([[command! -buffer JdtBytecode lua require('jdtls').javap()]])
-        vim.cmd([[command! -buffer JdtJshell lua require('jdtls').jshell()]])
-
         if status_ok then
-           print("Jdtls Service starting...")
+           print("Calling Java Language Server")
         else
            print("Error starting Jdtls: " .. tostring(jdtls_result))
         end 
 
     end,
     
-   { desc = "Start or Attatch Jdtls Language Server" }
+   { desc = "Start or Attatch Java Language Server" }
 )
 
