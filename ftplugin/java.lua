@@ -130,13 +130,11 @@ local config = {
             vim.fn.glob(java_dap_path .. "/extension/server/com.microsoft.java.debug.plugin-*.jar", 1)
         }
     },
-    -- Function that will be ran once the language server is attached
+
     on_attach = function()
-        vim.keymap.set("n", "Jei", "<Cmd> lua require('jdtls').organize_imports()<CR>",{ desc = "Java extract imports" })
         -- Setup the java debug adapter of the JDTLS server
         require("jdtls.dap").setup_dap()
         require("jdtls.dap").setup_dap_main_class_configs()
-        -- Enable jdtls commands to be used in Neovim
         require("jdtls.setup").add_commands()
     end,
 }
