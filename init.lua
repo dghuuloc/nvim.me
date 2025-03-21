@@ -47,9 +47,6 @@ vim.keymap.set('x', 'J', ':move \'>+1<CR>gv-gv', {noremap = true, silent = true}
 -------------------------------------------------------------------------------------------------
 -- #NEOVIM COMMANDS 
 -------------------------------------------------------------------------------------------------
--- Set up colorscheme
-vim.cmd.colorscheme('nord')
-
 -- Get h and l for moving over next lines or previous lines
 vim.cmd([[set whichwrap+=<,>,[,],h,l]])
 
@@ -59,47 +56,5 @@ vim.api.nvim_create_autocmd("FileType", {
     callback = function()
         vim.opt_local.formatoptions:remove({ "r", "o" })
     end,
-})
-
--------------------------------------------------------------------------------------------------
--- #BOOTSTRAP PLUGIN MANAGER
--------------------------------------------------------------------------------------------------
-local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not (vim.uv or vim.loop).fs_stat(lazypath) then
-    vim.fn.system({
-        "git",
-        "clone",
-        "--filter=blob:none",
-        "https://github.com/folke/lazy.nvim.git",
-        "--branch=stable", -- latest stable release
-        lazypath,
-    })
-
-end
-vim.opt.rtp:prepend(lazypath)
-
-require('lazy').setup({
-    {	
-		"williamboman/mason.nvim",
-		config = function()
-			require('mason').setup()
-		end
-        --[[
-            :MasonInstall jdtls java-debug-adapter js-debug-adapter 
-        ]]
-    },
-
-    {
-        "mfussenegger/nvim-jdtls"
-    },
-	
-    {
-        "mfussenegger/nvim-dap",
-        dependencies = {
-            "rcarriga/nvim-dap-ui",
-            "nvim-neotest/nvim-nio",
-            "mfussenegger/nvim-dap-python",
-        }
-    },
 })
 

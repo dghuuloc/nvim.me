@@ -2,8 +2,8 @@
 -- #REGION FOR CUSTOMIZE JDTLS LANGUAGE SERVER 
 -------------------------------------------------------------------------------------------------
 local workspace_dir = vim.fn.fnamemodify(vim.fn.getcwd(), ":p:h:h")
-local jdtls_path = require("mason-registry").get_package("jdtls"):get_install_path()
-local java_dap_path = require("mason-registry").get_package("java-debug-adapter"):get_install_path()
+local jdtls_path = vim.fn.stdpath("data") .. "/mason/packages/jdtls"
+local java_dap_path = vim.fn.stdpath("data") .. "/mason/packages/java-debug-adapter"
 
 local config = {
     cmd = {
@@ -20,8 +20,7 @@ local config = {
         "java.base/java.util=ALL-UNNAMED",
         "--add-opens",
         "java.base/java.lang=ALL-UNNAMED",
-        "-jar",
-        vim.fn.glob(jdtls_path .. "/plugins/org.eclipse.equinox.launcher_*.jar"),
+        "-jar", vim.fn.glob(jdtls_path .. "/plugins/org.eclipse.equinox.launcher_*.jar"),
         "-configuration", jdtls_path .. "/config_win",
         "-data", workspace_dir,
     },
@@ -29,7 +28,7 @@ local config = {
     root_dir = vim.fs.dirname(
         vim.fs.find({ ".git", "mvnw", "gradlew", "pom.xml", "build.gradle" }, { upward = true })[1]
     ),
-    -- Configure settings in the JDTLS server
+
     settings = {
         java = {
             eclipse = {
@@ -39,20 +38,19 @@ local config = {
                 updateBuildConfiguration = "interactive",
                 runtimes = {
                     {
-                        name = "JavaSE-11",
-                        path = "C:\\Program Files\\Java\\jdk-11",
+                        name = "JavaSE-21",
+                        path = "C:\\Program Files\\Java\\jdk-21",
                     },
                     {
                         name = "JavaSE-17",
                         path = "C:\\Program Files\\Java\\jdk-17",
                     },
                     {
-                        name = "JavaSE-21",
-                        path = "C:\\Program Files\\Java\\jdk-21",
+                        name = "JavaSE-11",
+                        path = "C:\\Program Files\\Java\\jdk-11",
                     },
                 },
             },
-
             maven = {
                 downloadSources = true,
             },
@@ -125,6 +123,7 @@ local config = {
             },
         },
     },
+
     init_options = {
         bundles = {
             vim.fn.glob(java_dap_path .. "/extension/server/com.microsoft.java.debug.plugin-*.jar", 1)
