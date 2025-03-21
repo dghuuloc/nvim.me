@@ -3,9 +3,6 @@ local dapui = require("dapui")
 
 -- Setup the dap ui with default configuration
 dapui.setup({})
--- define Dap-Breakpoint sign
-vim.cmd("hi DapBreakpointColor guifg=#fa4848")
-vim.fn.sign_define("DapBreakpoint", { text = "", texthl = "DapBreakpointColor", linehl = "", numhl = "" })
 
 -- Automatically open the UI when a new debug session is created.
 dap.listeners.before.launch.dapui_config = function()
