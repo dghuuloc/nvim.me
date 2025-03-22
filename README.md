@@ -14,5 +14,4 @@ git clone https://github.com/williamboman/mason.nvim.git "$env:LOCALAPPDATA\nvim
 - :lua require('mason').setup()
 - :MasonInstall jdtls java-debug-adapter js-debug-adapter
 
-## Using buit-in colorscheme
-shine(light), delek(light), slate, sorbet, retrobox
+## [Vim Cheat Sheet](https://vim.rtorr.com/)
