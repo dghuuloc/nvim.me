@@ -22,11 +22,9 @@ local function setup_jdtls()
             "-configuration", jdtls_path .. "/config_win",
             "-data", workspace_dir,
         },
-
         root_dir = vim.fs.dirname(
             vim.fs.find({ ".git", "mvnw", "gradlew", "pom.xml", "build.gradle" }, { upward = true })[1]
         ),
-
         settings = {
             java = {
                 eclipse = {
@@ -50,19 +48,15 @@ local function setup_jdtls()
                 },
             }
         },
-
         init_options = {
             bundles = {
                 vim.fn.glob(java_dap_path .. "/extension/server/com.microsoft.java.debug.plugin-*.jar", 1)
             }
         },
-
         on_attach = function()
             require("jdtls.dap").setup_dap()
             require("jdtls.dap").setup_dap_main_class_configs()
-            require("jdtls.setup").add_commands()
         end,
-
     }
 
     local status_ok, jdtls_result = pcall(require("jdtls").start_or_attach, config)
