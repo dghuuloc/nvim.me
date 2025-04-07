@@ -47,6 +47,9 @@ vim.keymap.set('x', 'J', ':move \'>+1<CR>gv-gv', {noremap = true, silent = true}
 -------------------------------------------------------------------------------------------------
 -- #NEOVIM COMMANDS 
 -------------------------------------------------------------------------------------------------
+-- Change default colorscheme to 'vim'
+vim.cmd.colorscheme('vim')
+
 -- Get h and l for moving over next lines or previous lines
 vim.cmd([[set whichwrap+=<,>,[,],h,l]])
 

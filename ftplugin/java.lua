@@ -69,3 +69,4 @@ local function setup_jdtls()
 end
 
 vim.api.nvim_create_user_command( "JdtStart", setup_jdtls, { desc = "Start or Attatch Java Language Server" } )
+vim.cmd([[ hi link javaConceptKind Type ]])
