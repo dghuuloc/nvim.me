@@ -8,6 +8,7 @@ git clone https://github.com/mfussenegger/nvim-dap-python.git "$env:LOCALAPPDATA
 git clone https://github.com/nvim-neotest/nvim-nio.git "$env:LOCALAPPDATA\nvim-data\site\pack\plugins\start\nvim-nio"
 git clone https://github.com/rcarriga/nvim-dap-ui.git "$env:LOCALAPPDATA\nvim-data\site\pack\plugins\start\nvim-dap-ui"
 git clone https://github.com/williamboman/mason.nvim.git "$env:LOCALAPPDATA\nvim-data\site\pack\plugins\start\mason.nvim"
+git clone https://github.com/nvim-tree/nvim-tree.lua.git "$env:LOCALAPPDATA\nvim-data\site\pack\plugins\start\nvim-tree.lua"
 ```
 
 ## Install languager server extension
