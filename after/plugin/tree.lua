@@ -49,3 +49,5 @@ vim.keymap.set('n', '<leader>e', ':NvimTreeToggle<CR>', {
     silent = true,
     desc = 'Open or close the tree'
 })
+
+vim.opt.statusline = "%{(&filetype=='NvimTree') ? '' : expand('%:t')}"
