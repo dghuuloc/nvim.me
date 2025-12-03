@@ -48,23 +48,23 @@ vim.keymap.set('x', 'J', ':move \'>+1<CR>gv-gv', {noremap = true, silent = true}
 -- === Built-in NETRW File Explorer Setup ===
 -------------------------------------------------------------------------------------------------
 -- Netrw settings to improve look & usability
-vim.g.netrw_banner = 0          -- hide banner
-vim.g.netrw_browse_split = 0    -- open in same window
-vim.g.netrw_winsize = 25        -- width 25%
-vim.g.netrw_liststyle = 3       -- tree-style view
-vim.g.netrw_altv = 1            -- open splits to the right
-vim.g.netrw_preview = 1         -- preview file in a split
-vim.g.netrw_keepdir = 0
-vim.g.netrw_fastbrowse = 2
+-- vim.g.netrw_banner = 0          -- hide banner
+-- vim.g.netrw_browse_split = 0    -- open in same window
+-- vim.g.netrw_winsize = 25        -- width 25%
+-- vim.g.netrw_liststyle = 3       -- tree-style view
+-- vim.g.netrw_altv = 1            -- open splits to the right
+-- vim.g.netrw_preview = 1         -- preview file in a split
+-- vim.g.netrw_keepdir = 0
+-- vim.g.netrw_fastbrowse = 2
 
 -- Open netrw with <leader>e
-vim.keymap.set("n", "<leader>e", ":Lexplore<CR>", { noremap = true, silent = true })
+-- vim.keymap.set("n", "<leader>e", ":Lexplore<CR>", { noremap = true, silent = true })
 
 -------------------------------------------------------------------------------------------------
 -- #NEOVIM COMMANDS 
 -------------------------------------------------------------------------------------------------
 -- Change default colorscheme to 'vim'
-vim.cmd.colorscheme('vim')
+vim.cmd.colorscheme('habamax')
 
 -- Get h and l for moving over next lines or previous lines
 vim.cmd([[set whichwrap+=<,>,[,],h,l]])
