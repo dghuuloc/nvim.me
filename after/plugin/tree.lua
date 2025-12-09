@@ -9,8 +9,13 @@ require('nvim-tree').setup({
     update_cwd = false,             -- do not change cwd
 
     renderer = {
-        root_folder_modifier = ":f",
+        root_folder_modifier = ':t',
         group_empty = true,         -- collapse empty folders
+
+        root_folder_label = function(path)
+            -- return " " .. string.upper(vim.fn.fnamemodify(path, ":t"))
+            return '~ ' .. string.upper(vim.fn.fnamemodify(path, ":t"))
+        end,
     },
 
     update_focused_file = {
@@ -51,3 +56,4 @@ vim.keymap.set('n', '<leader>e', ':NvimTreeToggle<CR>', {
 })
 
 vim.opt.statusline = "%{(&filetype=='NvimTree') ? '' : expand('%:t')}"
+
