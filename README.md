@@ -50,6 +50,7 @@ python -m pip install debugpy
 
 ## Install languager server extension
 - :lua require('mason').setup()
-- :MasonInstall jdtls java-debug-adapter js-debug-adapter
+- :MasonInstall jdtls java-debug-adapter js-debug-adapter java-test
+
 
 ## [Vim Cheat Sheet](https://vim.rtorr.com/)
