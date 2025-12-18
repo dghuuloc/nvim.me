@@ -1,6 +1,8 @@
--- lua/native_explorer.lua
--- Native Neovim File Explorer (NO plugins)
--- nvim-tree–like behavior: colorscheme-aware, toggleable, fixed root
+-- ====================================================================================
+-- Native Neovim Explorer
+-- Author: dghuuloc
+-- Neovim: 0.11+
+-- ====================================================================================
 
 local M = {}
 
@@ -8,17 +10,35 @@ local api = vim.api
 local fn  = vim.fn
 local uv  = vim.loop
 
--- =========================
+-- ====================================================================================
 -- State
--- =========================
+-- ====================================================================================
 local state = {
     root = uv.cwd(),
     win = nil,          -- explorer window
     buf = nil,          -- explorer buffer
     tree = {},
-    expanded = {},
+    expanded = vim.g.native_explorer_expanded or {},
     clipboard = nil,
 }
+
+-- =========================
+-- Highlights (colorscheme aware)
+-- =========================
+local function setup_highlights()
+    local hl = api.nvim_set_hl
+    hl(0, "ExplorerRoot",      { link = "Title" })
+    hl(0, "ExplorerDirectory",{ link = "Directory" })
+    hl(0, "ExplorerFile",     { link = "Normal" })
+    hl(0, "ExplorerIcon",     { link = "Special" })
+    hl(0, "ExplorerCursor",   { link = "Visual" })
+end
+
+setup_highlights()
+
+api.nvim_create_autocmd("ColorScheme", {
+    callback = setup_highlights,
+})
 
 -- =========================
 -- Helpers
@@ -49,7 +69,7 @@ local function scandir(path)
     return items
 end
 
--- group_empty = true
+-- group_empty
 local function collapse_dir(path)
     local current = path
     while true do
@@ -58,9 +78,7 @@ local function collapse_dir(path)
 
         local name, t = uv.fs_scandir_next(handle)
         if not name then break end
-
-        local next_name = uv.fs_scandir_next(handle)
-        if next_name then break end
+        if uv.fs_scandir_next(handle) then break end
 
         if t == "directory" then
             current = current .. "/" .. name
@@ -71,6 +89,16 @@ local function collapse_dir(path)
     return current
 end
 
+-- =========================
+-- Git status (minimal)
+-- =========================
+-- local function git_status(path)
+--     if fn.isdirectory(".git") == 0 then return "" end
+--     local out = fn.systemlist({ "git", "status", "--porcelain", path })
+--     if #out == 0 then return "" end
+--     return out[1]:sub(1, 2)
+-- end
+ 
 -- =========================
 -- Tree
 -- =========================
@@ -89,6 +117,7 @@ local function build_tree(path, depth)
                 depth = depth,
                 is_dir = true,
             })
+
             if state.expanded[collapsed] then
                 vim.list_extend(nodes, build_tree(collapsed, depth + 1))
             end
@@ -112,23 +141,80 @@ local function render()
     if not state.buf then return end
     
     state.tree = build_tree(state.root)
+
     local lines = {}
+    local highlights = {}
 
     -- root label
     table.insert(lines, "~ " .. string.upper(fn.fnamemodify(state.root, ":t")))
+    table.insert(highlights, {
+        line = 0,
+        group = "ExplorerRoot",
+        start = 0,
+        finish = -1,
+    })
 
-    for _, node in ipairs(state.tree) do
+    for i, node in ipairs(state.tree) do
         local indent = string.rep("  ", node.depth)
         local icon = node.is_dir
             and (state.expanded[node.path] and "" or "")
             or "󰈙"
 
+        -- added git status
+        -- local git = git_status(node.path)
+        -- table.insert(lines, indent .. icon .. " " .. node.name .. " " .. git)
         table.insert(lines, indent .. icon .. " " .. node.name)
+
+        -- CHECK HIGHLIGHT
+        local row = i
+
+        -- icon highlight
+        table.insert(highlights, {
+            line = row,
+            group = "ExplorerIcon",
+            start = #indent,
+            finish = #indent + #icon + 1,
+        })
+
+        -- name highlight
+        table.insert(highlights, {
+            line = row,
+            group = node.is_dir and "ExplorerDirectory" or "ExplorerFile",
+            start = #indent + #icon + 2,
+            finish = -1,
+        })
+
     end
 
     api.nvim_buf_set_option(state.buf, "modifiable", true)
     api.nvim_buf_set_lines(state.buf, 0, -1, false, lines)
+
+    api.nvim_buf_clear_namespace(state.buf, -1, 0, -1)
+
+    for _, h in ipairs(highlights) do
+        api.nvim_buf_add_highlight(
+            state.buf, -1, h.group, h.line, h.start, h.finish
+        )
+    end
+    
     api.nvim_buf_set_option(state.buf, "modifiable", false)
+
+    -- 🔹 Highlight current file
+    -- local cur = fn.expand("%:p")
+    -- if cur ~= "" then
+    --     for i, node in ipairs(state.tree) do
+    --         if node.path == cur then
+    --             api.nvim_buf_add_highlight(
+    --                 state.buf,
+    --                 -1,
+    --                 "Visual",
+    --                 i,  -- +1 because root label
+    --                 0,
+    --                 -1
+    --             )
+    --         end
+    --     end
+    -- end
 end
 
 -- =========================
@@ -143,26 +229,35 @@ end
 -- =========================
 -- Open file in RIGHT window
 -- =========================
+-- local function open_in_right_window(path)
+--     if not state.win or not api.nvim_win_is_valid(state.win) then
+--         return
+--     end
+-- 
+--     -- go to explorer
+--     api.nvim_set_current_win(state.win)
+-- 
+--     -- try right window
+--     vim.cmd("wincmd l")
+--     local target = api.nvim_get_current_win()
+-- 
+--     -- if no right window, create one
+--     if target == state.win then
+--         vim.cmd("vsplit")
+--         vim.cmd("wincmd l")
+--         target = api.nvim_get_current_win()
+--     end
+-- 
+--     api.nvim_set_current_win(target)
+--     vim.cmd("edit " .. fn.fnameescape(path))
+-- end
+
 local function open_in_right_window(path)
-    if not state.win or not api.nvim_win_is_valid(state.win) then
-        return
-    end
-
-    -- go to explorer
     api.nvim_set_current_win(state.win)
-
-    -- try right window
     vim.cmd("wincmd l")
-    local target = api.nvim_get_current_win()
-
-    -- if no right window, create one
-    if target == state.win then
-        vim.cmd("vsplit")
-        vim.cmd("wincmd l")
-        target = api.nvim_get_current_win()
+    if api.nvim_get_current_win() == state.win then
+        vim.cmd("vsplit | wincmd l")
     end
-
-    api.nvim_set_current_win(target)
     vim.cmd("edit " .. fn.fnameescape(path))
 end
 
@@ -175,6 +270,7 @@ function M.open()
 
     if node.is_dir then
         state.expanded[node.path] = not state.expanded[node.path]
+        vim.g.native_explorer_expanded = state.expanded
         render()
     else
         open_in_right_window(node.path)
@@ -182,19 +278,62 @@ function M.open()
     end
 end
 
--- create
-function M.create()
+-- base path 
+local function get_base_path()
     local node = get_node()
-    local base = node and (node.is_dir and node.path or fn.fnamemodify(node.path, ":h")) or state.root
-    local name = fn.input("Create: ")
+    if not node then
+        return state.root
+    end
+
+    if node.is_dir then
+        return node.path
+    end
+
+    return fn.fnamemodify(node.path, ":h")
+end
+
+-- create
+function M.create_file()
+    -- local node = get_node()
+    -- local base = node 
+    --             and (node.is_dir and node.path or fn.fnamemodify(node.path, ":h")) 
+    --             or state.root
+
+    local base = get_base_path()
+
+    local name = fn.input("Create file: ")
     if name == "" then return end
 
     local path = base .. "/" .. name
-    if name:sub(-1) == "/" then
-        uv.fs_mkdir(path, 493)
-    else
-        uv.fs_open(path, "w", 420)
-    end
+
+    -- if name:sub(-1) == "/" then
+    --     uv.fs_mkdir(path, 493)
+    -- else
+    --     uv.fs_open(path, "w", 420)
+    -- end
+
+    -- ensure parent directories exist
+    fn.mkdir(fn.fnamemodify(path, ":h"), "p")
+
+    local fd = uv.fs_open(path, "w", 420)
+    if fd then uv.fs_close(fd) end
+
+    render()
+end
+
+function M.create_dir()
+    -- local node = get_node()
+
+    -- local base = node
+    --     and (node.is_dir and node.path or fn.fnamemodify(node.path, ":h"))
+    --     or state.root
+    local base = get_base_path()
+
+    local name = fn.input("Create folder: ")
+    if name == "" then return end
+
+    fn.mkdir(base .. "/" .. name, "p")
+
     render()
 end
 
@@ -272,7 +411,8 @@ function M.toggle()
     -- mapping
     map("<CR>", M.open)
     map("o", M.open)
-    map("a", M.create)
+    map("a", M.create_file)     -- create file
+    map("A", M.create_dir)      -- create directory 
     map("r", M.rename)
     map("d", M.delete)
     map("y", function() M.copy(false) end)
