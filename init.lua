@@ -1,3 +1,18 @@
+-- ================================================================================================
+-- title : Native NeoVim Config
+-- author: dghuuloc
+-- ================================================================================================-------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------------------
+-- THEME
+-------------------------------------------------------------------------------------------------
+-- Change default colorscheme to 'vim'
+-- vim.cmd.colorscheme('habamax')
+pcall(vim.cmd.colorscheme, 'unokai')
+vim.api.nvim_set_hl(0, 'Normal', { bg = 'none' })
+vim.api.nvim_set_hl(0, 'NormalNC', { bg = 'none' })
+vim.api.nvim_set_hl(0, 'EndOfBuffer', { bg = 'none' })
+
 -------------------------------------------------------------------------------------------------
 -- #NEOVIM OPTIONS 
 -------------------------------------------------------------------------------------------------
@@ -47,13 +62,6 @@ vim.keymap.set('x', 'J', ':move \'>+1<CR>gv-gv', {noremap = true, silent = true}
 -------------------------------------------------------------------------------------------------
 -- #NEOVIM COMMANDS 
 -------------------------------------------------------------------------------------------------
--- Change default colorscheme to 'vim'
--- vim.cmd.colorscheme('habamax')
-vim.cmd.colorscheme('unokai')
-vim.api.nvim_set_hl(0, 'Normal', { bg = 'none' })
-vim.api.nvim_set_hl(0, 'NormalNC', { bg = 'none' })
-vim.api.nvim_set_hl(0, 'EndOfBuffer', { bg = 'none' })
-
 -- Get h and l for moving over next lines or previous lines
 vim.cmd([[set whichwrap+=<,>,[,],h,l]])
 
