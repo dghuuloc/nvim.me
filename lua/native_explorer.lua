@@ -12,7 +12,6 @@ local uv  = vim.loop
 
 -- ====================================================================================
 -- State
--- ====================================================================================
 local state = {
     root = uv.cwd(),
     win = nil,          -- explorer window
@@ -39,15 +38,12 @@ local state = {
 -- api.nvim_create_autocmd("ColorScheme", {
 --     callback = setup_highlights,
 -- })
--- 
--- =========================
+ 
+-- ====================================================================================
 -- Helpers
--- =========================
 local function is_open()
-    return state.win
-        and api.nvim_win_is_valid(state.win)
-        and state.buf
-        and api.nvim_buf_is_valid(state.buf)
+    return state.win and api.nvim_win_is_valid(state.win)
+        and state.buf and api.nvim_buf_is_valid(state.buf)
 end
 
 local function scandir(path)
@@ -69,6 +65,7 @@ local function scandir(path)
     return items
 end
 
+-- ====================================================================================
 -- group_empty
 local function collapse_dir(path)
     local current = path
@@ -140,34 +137,77 @@ end
 --     return nodes
 -- end
 
+-- local function build_tree(path, depth)
+--     depth = depth or 0
+--     local nodes = {}
+-- 
+--     local items = scandir(path)
+--     for _, item in ipairs(items) do
+--         local full = path .. "/" .. item.name
+-- 
+--         table.insert(nodes, {
+--             name = item.name,
+--             path = full,
+--             depth = depth,
+--             is_dir = item.type == "directory",
+--         })
+-- 
+--         if item.type == "directory" and state.expanded[full] then
+--             vim.list_extend(nodes, build_tree(full, depth + 1))
+--         end
+--     end
+-- 
+--     return nodes
+-- end
+
+-- ====================================================================================
+-- Tree builder with VSCode-style collapsing
 local function build_tree(path, depth)
     depth = depth or 0
     local nodes = {}
 
-    local items = scandir(path)
-    for _, item in ipairs(items) do
+    for _, item in ipairs(scandir(path)) do
         local full = path .. "/" .. item.name
 
-        table.insert(nodes, {
-            name = item.name,
-            path = full,
-            depth = depth,
-            is_dir = item.type == "directory",
-        })
+        if item.type == "directory" then
+            local current = full
+            local name_chain = { item.name }
 
-        if item.type == "directory" and state.expanded[full] then
-            vim.list_extend(nodes, build_tree(full, depth + 1))
+            -- collapse single-child directories
+            while true do
+                local items = scandir(current)
+                if #items ~= 1 or items[1].type ~= "directory" then break end
+                table.insert(name_chain, items[1].name)
+                current = current .. "/" .. items[1].name
+            end
+
+            table.insert(nodes, {
+                name = table.concat(name_chain, "/"),
+                path = current,
+                depth = depth,
+                is_dir = true,
+            })
+
+            if state.expanded[current] then
+                vim.list_extend(nodes, build_tree(current, depth + 1))
+            end
+        else
+            table.insert(nodes, {
+                name = item.name,
+                path = full,
+                depth = depth,
+                is_dir = false,
+            })
         end
     end
 
     return nodes
 end
--- =========================
+
+-- ====================================================================================
 -- Render
--- =========================
 local function render()
     if not state.buf then return end
-    
     state.tree = build_tree(state.root)
 
     local lines = {}
@@ -175,12 +215,7 @@ local function render()
 
     -- root label
     table.insert(lines, "~ " .. string.upper(fn.fnamemodify(state.root, ":t")))
-    table.insert(highlights, {
-        line = 0,
-        group = "ExplorerRoot",
-        start = 0,
-        finish = -1,
-    })
+    -- table.insert(highlights, { line = 0, group = "ExplorerRoot", start = 0, finish = -1, })
 
     for i, node in ipairs(state.tree) do
         local indent = string.rep("  ", node.depth)
@@ -216,7 +251,6 @@ local function render()
 
     api.nvim_buf_set_option(state.buf, "modifiable", true)
     api.nvim_buf_set_lines(state.buf, 0, -1, false, lines)
-
     api.nvim_buf_clear_namespace(state.buf, -1, 0, -1)
 
     for _, h in ipairs(highlights) do
@@ -227,7 +261,7 @@ local function render()
     
     api.nvim_buf_set_option(state.buf, "modifiable", false)
 
-    -- 🔹 Highlight current file
+    -- Highlight current file
     -- local cur = fn.expand("%:p")
     -- if cur ~= "" then
     --     for i, node in ipairs(state.tree) do
@@ -245,6 +279,7 @@ local function render()
     -- end
 end
 
+-- ====================================================================================
 -- Node helper
 local function get_node()
     local row = api.nvim_win_get_cursor(0)[1]
@@ -286,6 +321,8 @@ end
 --     vim.cmd("edit " .. fn.fnameescape(path))
 -- end
 
+-- ====================================================================================
+-- Open file in RIGHT window
 local function open_in_right_window(path)
     api.nvim_set_current_win(state.win)
     vim.cmd("wincmd l")
@@ -295,9 +332,8 @@ local function open_in_right_window(path)
     vim.cmd("edit " .. fn.fnameescape(path))
 end
 
--- =========================
+-- ====================================================================================
 -- Actions
--- =========================
 function M.open()
     local node = get_node()
     if not node then return end
