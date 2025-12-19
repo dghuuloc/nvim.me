@@ -1,5 +1,5 @@
 -- ====================================================================================
--- Native Neovim Explorer
+-- Fexptr: Native Neovim File Explorer
 -- Author: dghuuloc
 -- Neovim: 0.11+
 -- ====================================================================================
@@ -12,13 +12,23 @@ local uv  = vim.loop
 
 -- ====================================================================================
 -- State
+
+---@class Word
+---@field dir string Directory path of the node
+---@field node string Node name
+---@field link string|nil Symlink target (optional)
+---@field extension string|nil File extension (optional)
+---@field type number 0=file, 1=directory
+---@field col number Column of node in buffer
+
+--@type table
 local state = {
     root = uv.cwd(),
     win = nil,          -- explorer window
     buf = nil,          -- explorer buffer
     tree = {},
     expanded = vim.g.native_explorer_expanded or {},
-    clipboard = nil,
+    clipboard = nil, -- { path = string, cut = boolean }
 }
 
 -- =========================
@@ -41,11 +51,14 @@ local state = {
  
 -- ====================================================================================
 -- Helpers
+---@return boolean
 local function is_open()
     return state.win and api.nvim_win_is_valid(state.win)
         and state.buf and api.nvim_buf_is_valid(state.buf)
 end
 
+---@param path string
+---@return Word[]
 local function scandir(path)
     local handle = uv.fs_scandir(path)
     if not handle then return {} end
@@ -54,10 +67,13 @@ local function scandir(path)
     while true do
         local name, t = uv.fs_scandir_next(handle)
         if not name then break end
-        table.insert(items, { name = name, type = t })
+        table.insert(items, {
+            name = name,
+            type = t
+        })
     end
 
-    table.sort(items, function(a, b)
+    table.sort(items, function(a,b)
         if a.type == b.type then return a.name < b.name end
         return a.type == "directory"
     end)
@@ -65,32 +81,53 @@ local function scandir(path)
     return items
 end
 
+
+-- ====================================================================================
+-- Recursive copy (Windows-safe)
+local function copy_recursive(src, dest)
+    local stat = uv.fs_stat(src)
+    if not stat then return end
+
+    if stat.type == "file" then
+        fn.mkdir(fn.fnamemodify(dest, ":h"), "p")
+        local data = assert(io.open(src, "rb")):read("*all")
+        local f = assert(io.open(dest, "wb"))
+        f:write(data)
+        f:close()
+    elseif stat.type == "directory" then
+        fn.mkdir(dest, "p")
+        for _, item in ipairs(scandir(src)) do
+            copy_recursive(src .. "/" .. item.name, dest .. "/" .. item.name)
+        end
+    end
+end
+
 -- ====================================================================================
 -- group_empty
-local function collapse_dir(path)
-    local current = path
-    while true do
-        local handle = uv.fs_scandir(current)
-        if not handle then break end
-
-        local name, t = uv.fs_scandir_next(handle)
-        if not name then break end
-
-        if uv.fs_scandir_next(handle) then break end
-
-        if t == "directory" then
-            current = current .. "/" .. name
-        else
-            break
-        end
-
-        -- local next_name, next_type = uv.fs_scandir_next(handle)
-        -- if next_name or t ~= "directory" then break end
-
-        -- current = current .. "/" .. name
-    end
-    return current
-end
+-- local function collapse_dir(path)
+--     local current = path
+--     while true do
+--         local handle = uv.fs_scandir(current)
+--         if not handle then break end
+-- 
+--         local name, t = uv.fs_scandir_next(handle)
+--         if not name then break end
+-- 
+--         if uv.fs_scandir_next(handle) then break end
+-- 
+--         if t == "directory" then
+--             current = current .. "/" .. name
+--         else
+--             break
+--         end
+-- 
+--         -- local next_name, next_type = uv.fs_scandir_next(handle)
+--         -- if next_name or t ~= "directory" then break end
+-- 
+--         -- current = current .. "/" .. name
+--     end
+--     return current
+-- end
 
 -- =========================
 -- Git status (minimal)
@@ -161,12 +198,19 @@ end
 -- end
 
 -- ====================================================================================
--- Tree builder with VSCode-style collapsing
+-- Tree builder
+---@param path string
+---@param depth number
+---@return Word[]
 local function build_tree(path, depth)
     depth = depth or 0
     local nodes = {}
 
-    for _, item in ipairs(scandir(path)) do
+    local ok, items = pcall(scandir, path)
+    if not ok or not items then return nodes end
+
+    -- for _, item in ipairs(scandir(path)) do
+    for _, item in ipairs(items) do
         local full = path .. "/" .. item.name
 
         if item.type == "directory" then
@@ -208,16 +252,16 @@ end
 -- Render
 local function render()
     if not state.buf then return end
-    state.tree = build_tree(state.root)
+    state.tree = build_tree(state.root) or {}
 
     local lines = {}
-    local highlights = {}
+    -- local highlights = {}
 
     -- root label
     table.insert(lines, "~ " .. string.upper(fn.fnamemodify(state.root, ":t")))
     -- table.insert(highlights, { line = 0, group = "ExplorerRoot", start = 0, finish = -1, })
 
-    for i, node in ipairs(state.tree) do
+    for _, node in ipairs(state.tree) do
         local indent = string.rep("  ", node.depth)
         local icon = node.is_dir
             and (state.expanded[node.path] and "" or "")
@@ -229,7 +273,7 @@ local function render()
         table.insert(lines, indent .. icon .. " " .. node.name)
 
         -- CHECK HIGHLIGHT
-        local row = i
+        -- local row = i
 
         -- icon highlight
         -- table.insert(highlights, {
@@ -253,11 +297,11 @@ local function render()
     api.nvim_buf_set_lines(state.buf, 0, -1, false, lines)
     api.nvim_buf_clear_namespace(state.buf, -1, 0, -1)
 
-    for _, h in ipairs(highlights) do
-        api.nvim_buf_add_highlight(
-            state.buf, -1, h.group, h.line, h.start, h.finish
-        )
-    end
+    -- for _, h in ipairs(highlights) do
+    --     api.nvim_buf_add_highlight(
+    --         state.buf, -1, h.group, h.line, h.start, h.finish
+    --     )
+    -- end
     
     api.nvim_buf_set_option(state.buf, "modifiable", false)
 
@@ -337,7 +381,6 @@ end
 function M.open()
     local node = get_node()
     if not node then return end
-
     if node.is_dir then
         state.expanded[node.path] = not state.expanded[node.path]
         vim.g.native_explorer_expanded = state.expanded
@@ -347,7 +390,6 @@ function M.open()
         -- vim.cmd("edit " .. fn.fnameescape(node.path))
     end
 end
-
 
 -- Create file or folder
 function M.create_()
@@ -374,7 +416,11 @@ function M.rename_()
     if not node then return end
     local new = fn.input("Rename: ", node.name)
     if new == "" then return end
-    uv.fs_rename(node.path, fn.fnamemodify(node.path, ":h") .. "/" .. new)
+
+    -- uv.fs_rename(node.path, fn.fnamemodify(node.path, ":h") .. "/" .. new)
+    local dest = fn.fnamemodify(node.path, ":h") .. "/" .. new
+    fn.mkdir(fn.fnamemodify(dest, ":h"), "p")  -- ensure parent folder exists
+    uv.fs_rename(node.path, dest)
     render()
 end
 
@@ -402,17 +448,19 @@ function M.paste_()
     local target = dest .. "/" .. fn.fnamemodify(state.clipboard.path, ":t")
 
     if state.clipboard.cut then
+        fn.mkdir(fn.fnamemodify(target, ":h"), "p") --added copy
         uv.fs_rename(state.clipboard.path, target)
         state.clipboard = nil
     else
-        fn.system({ "cp", "-r", state.clipboard.path, target })
+        -- fn.system({ "cp", "-r", state.clipboard.path, target })
+        copy_recursive(state.clipboard.path, target)
     end
+
     render()
 end
 
--- =========================
--- Toggle (IMPORTANT)
--- =========================
+-- ====================================================================================
+-- Toggle
 function M.toggle()
     if is_open() then
         api.nvim_win_close(state.win, true)
@@ -422,34 +470,33 @@ function M.toggle()
     end
 
     state.buf = api.nvim_create_buf(false, true)
-    vim.bo[state.buf].buftype = "nofile"
-    vim.bo[state.buf].bufhidden = "wipe"
+    vim.bo[state.buf].buftype = 'nofile'
+    vim.bo[state.buf].bufhidden = 'wipe'
     vim.bo[state.buf].swapfile = false
-    vim.bo[state.buf].filetype = "Explorer"
+    vim.bo[state.buf].filetype = 'Explorer'
 
-    vim.cmd("topleft 30vsplit")
+    vim.cmd('topleft 30vsplit')
     state.win = api.nvim_get_current_win()
     api.nvim_win_set_buf(state.win, state.buf)
-
     vim.wo[state.win].number = false
     vim.wo[state.win].relativenumber = false
-    vim.wo[state.win].signcolumn = "no"
+    vim.wo[state.win].signcolumn = 'no'
 
     local map = function(lhs, rhs)
-        vim.keymap.set("n", lhs, rhs, { buffer = state.buf, silent = true })
+        vim.keymap.set('n', lhs, rhs, { buffer = state.buf, silent = true })
     end
 
     -- mapping
-    map("<CR>", M.open)
-    map("o", M.open)
-    map("a", M.create_)
-    map("r", M.rename_)
-    map("d", M.delete_)
-    map("y", function() M.copy_(false) end)
-    map("x", function() M.copy_(true) end)
-    map("p", M.paste_)
-    map("q", M.toggle)
-    map("<leader>e", M.toggle)
+    map('<CR>', M.open)
+    map('o', M.open)
+    map('a', M.create_)
+    map('r', M.rename_)
+    map('d', M.delete_)
+    map('y', function() M.copy_(false) end)
+    map('x', function() M.copy_(true) end)
+    map('p', M.paste_)
+    map('q', M.toggle)
+    map('<leader>e', M.toggle)
 
     render()
 end
