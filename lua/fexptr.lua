@@ -349,7 +349,7 @@ function M.open()
 end
 
 
--- Create file or folder like nvim-tree
+-- Create file or folder
 function M.create_()
     local base = get_base_path()
     local name = fn.input("Create: ")
@@ -368,43 +368,8 @@ function M.create_()
     render()
 end
 
--- create
-function M.create_file()
-    local base = get_base_path()
-
-    local name = fn.input("Create file: ")
-    if name == "" then return end
-
-    local path = base .. "/" .. name
-
-    -- if name:sub(-1) == "/" then
-    --     uv.fs_mkdir(path, 493)
-    -- else
-    --     uv.fs_open(path, "w", 420)
-    -- end
-
-    -- ensure parent directories exist
-    fn.mkdir(fn.fnamemodify(path, ":h"), "p")
-
-    local fd = uv.fs_open(path, "w", 420)
-    if fd then uv.fs_close(fd) end
-
-    render()
-end
-
-function M.create_dir()
-    local base = get_base_path()
-
-    local name = fn.input("Create folder: ")
-    if name == "" then return end
-
-    fn.mkdir(base .. "/" .. name, "p")
-
-    render()
-end
-
--- rename
-function M.rename()
+-- Rename file or folder
+function M.rename_()
     local node = get_node()
     if not node then return end
     local new = fn.input("Rename: ", node.name)
@@ -413,8 +378,8 @@ function M.rename()
     render()
 end
 
--- delete
-function M.delete()
+-- Delete file or folder
+function M.delete_()
     local node = get_node()
     if not node then return end
     if fn.confirm("Delete " .. node.name .. "?", "&Yes\n&No") ~= 1 then return end
@@ -422,15 +387,15 @@ function M.delete()
     render()
 end
 
--- copy
-function M.copy(cut)
+-- Copy file or folder
+function M.copy_(cut)
     local node = get_node()
     if not node then return end
     state.clipboard = { path = node.path, cut = cut }
 end
 
--- paste
-function M.paste()
+-- Paste file or folder
+function M.paste_()
     if not state.clipboard then return end
     local node = get_node()
     local dest = node and (node.is_dir and node.path or fn.fnamemodify(node.path, ":h")) or state.root
@@ -477,13 +442,12 @@ function M.toggle()
     -- mapping
     map("<CR>", M.open)
     map("o", M.open)
-    map("a", M.create_)     -- create file
-    -- map("A", M.create_dir)      -- create directory 
-    map("r", M.rename)
-    map("d", M.delete)
-    map("y", function() M.copy(false) end)
-    map("x", function() M.copy(true) end)
-    map("p", M.paste)
+    map("a", M.create_)
+    map("r", M.rename_)
+    map("d", M.delete_)
+    map("y", function() M.copy_(false) end)
+    map("x", function() M.copy_(true) end)
+    map("p", M.paste_)
     map("q", M.toggle)
     map("<leader>e", M.toggle)
 
