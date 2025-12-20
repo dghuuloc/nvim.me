@@ -54,6 +54,10 @@ vim.opt.guicursor = {
     'a:blinkwait700-blinkoff400-blinkon250',
 }
 
+-- Statusline
+vim.opt.laststatus = 3
+vim.opt.statusline = "%{%substitute(fnamemodify(bufname('%'),':~:.'),'\\\\','/','g')%} %h%m%r"
+
 -- Buffer navigation
 vim.keymap.set('n', '<TAB>', ':bnext<CR>', {noremap = true, silent = true, desc = 'Buffer Next'})
 vim.keymap.set('n', '<S-TAB>', ':bprevious<CR>', {noremap = true, silent = true, desc = 'Buffer Previous'})
@@ -197,8 +201,3 @@ vim.keymap.set('n', '<leader>e', function()
   require('fexptr').toggle()
 end, { desc = 'Toggle Native Explorer' })
 
--- Statusline
--- vim.opt.statusline = "%{%substitute(expand('%:~'),'\\\\','/','g')%} %h%m%r"
-vim.opt.laststatus = 3
-vim.opt.statusline =
-  "%{%substitute(fnamemodify(bufname('%'),':~:.'),'\\\\','/','g')%} %h%m%r"
