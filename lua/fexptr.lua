@@ -29,6 +29,15 @@ end
 
 -- ====================================================================================
 -- State
+
+---@type {
+---  root: string,
+---  win: number|nil,
+---  buf: number|nil,
+---  tree: ExplorerNode[],
+---  expanded: table<string, boolean>,
+---  clipboard: Clipboard|nil
+---}
 local state = {
     root = uv.cwd(),
     win = nil,
@@ -41,6 +50,9 @@ local state = {
 
 -- ====================================================================================
 -- FS Helpers
+
+---@param path string
+---@return { name: string, type: string }[]
 local function scandir(path)
     local handle = uv.fs_scandir(path)
     if not handle then return {} end
@@ -62,6 +74,11 @@ local function scandir(path)
     return items
 end
 
+-- ====================================================================================
+-- Recursive copy (Windows-safe)
+
+---@param src string
+---@param dest string
 local function copy_recursive(src, dest)
     local stat = uv.fs_stat(src)
     if not stat then return end
@@ -81,7 +98,11 @@ local function copy_recursive(src, dest)
 end
 
 -- ====================================================================================
--- Tree Builder
+-- Tree builder (collapsed directories, UI only)
+
+---@param path string
+---@param depth number
+---@return ExplorerNode[]
 local function build_tree(path, depth)
     depth = depth or 0
     local nodes = {}
@@ -150,12 +171,15 @@ end
 
 -- ====================================================================================
 -- Node Helpers
+
+---@return ExplorerNode|nil
 local function get_node()
     local row = api.nvim_win_get_cursor(0)[1]
     if row <= 1 then return nil end
     return state.tree[row-1]
 end
 
+---@return string
 local function base_path()
     local node = get_node()
     if not node then return state.root end
@@ -164,9 +188,17 @@ end
 
 -- ====================================================================================
 -- Actions
+
 local function open_in_right(path)
+    -- vim.cmd("wincmd l")
+    -- vim.cmd("edit " .. fn.fnameescape(path))
+    api.nvim_set_current_win(state.win)
     vim.cmd("wincmd l")
+    if api.nvim_get_current_win() == state.win then
+        vim.cmd("vsplit | wincmd l")
+    end
     vim.cmd("edit " .. fn.fnameescape(path))
+
 end
 
 function M.open()
@@ -181,7 +213,7 @@ function M.open()
     end
 end
 
-function M.create()
+function M.create_()
     local node = get_node()
     local base
 
@@ -218,63 +250,20 @@ function M.create()
     render()
 end
 
--- ===========================
--- TODO: fix move_recursive and rename
-local function move_recursive(src, dest)
-    local stat = uv.fs_stat(src)
-    if not stat then return false end
-
-    if stat.type == "file" then
-        -- Ensure parent exists
-        fn.mkdir(fn.fnamemodify(dest, ":h"), "p")
-        -- Copy file
-        local data = assert(io.open(src, "rb")):read("*all")
-        local f = assert(io.open(dest, "wb"))
-        f:write(data)
-        f:close()
-        -- Delete original file
-        local ok, err = uv.fs_unlink(src)
-        if not ok then
-            vim.notify("Failed to delete file: " .. src .. " ("..tostring(err)..")", vim.log.levels.ERROR)
-        end
-    elseif stat.type == "directory" then
-        -- Create destination folder
-        fn.mkdir(dest, "p")
-        -- Move all children
-        for _, item in ipairs(scandir(src)) do
-            move_recursive(src .. "/" .. item.name, dest .. "/" .. item.name)
-        end
-        -- Delete the empty source folder itself
-        -- local ok, err = pcall(fn.delete, src, "rf")
-        -- if not ok then
-        --     vim.notify("Failed to delete folder: " .. src .. " ("..tostring(err)..")", vim.log.levels.ERROR)
-        -- end
-        -- -- Delete original directory itself
-        local ok, err = pcall(fn.delete, src, "rf")
-        if not ok then
-            vim.notify("Failed to delete folder: " .. src .. " ("..tostring(err)..")", vim.log.levels.ERROR)
-        end
-    end
-
-    return true
-end
-
-function M.rename()
+function M.rename_()
     local node = get_node()
     if not node then return end
 
     local rel_path = vim.fn.fnamemodify(node.path, ":.")
     rel_path = rel_path:gsub("\\", "/")
-
     local input = vim.fn.input("Rename (relative to root): ", rel_path)
     if input == "" then return end
 
-    local abs_old = vim.fn.fnamemodify(node.path, ":p"):gsub("\\", "/")
-    local abs_new = state.root .. "/" .. input
-    abs_new = abs_new:gsub("[/\\]+", "/")
+     -- Normalize paths
+    local abs_old = node.path:gsub("\\", "/")
+    local abs_new = (state.root .. "/" .. input):gsub("\\", "/"):gsub("/+", "/")
 
     local abs_new_parent = vim.fn.fnamemodify(abs_new, ":h")
-
     if not vim.loop.fs_stat(abs_new_parent) then
         vim.fn.mkdir(abs_new_parent, "p")
     end
@@ -284,17 +273,18 @@ function M.rename()
         return
     end
 
-    local ok = move_recursive(abs_old, abs_new)
+    -- Attempt to rename (works for files and empty directories)
+    local ok, err = uv.fs_rename(abs_old, abs_new)
     if not ok then
-        vim.notify("Rename failed: ", vim.log.levels.ERROR)
+        vim.notify("Rename failed: " .. tostring(err), vim.log.levels.ERROR)
         return
     end
 
+    -- Refresh the tree
     render()
 end
 
--- ===========================
-function M.delete()
+function M.delete_()
     local node = get_node()
     if not node then return end
     if fn.confirm("Delete "..node.name.."?", "&Yes\n&No") ~= 1 then return end
@@ -308,7 +298,7 @@ function M.copy(cut)
 end
 
 -- ===========================
-function M.paste()
+function M.paste_()
     if not state.clipboard then return end
 
     -- Pre-fill target input with current node path relative to root
@@ -379,12 +369,12 @@ function M.toggle()
 
     map("<CR>", M.open)
     map("o", M.open)
-    map("a", M.create)
-    map("r", M.rename)
-    map("d", M.delete)
-    map("y", function() M.copy(false) end)
-    map("x", function() M.copy(true) end)
-    map("p", M.paste)
+    map("a", M.create_)
+    map("r", M.rename_)
+    map("d", M.delete_)
+    map("y", function() M.copy_(false) end)
+    map("x", function() M.copy_(true) end)
+    map("p", M.paste_)
     map("q", M.toggle)
 
     render()
