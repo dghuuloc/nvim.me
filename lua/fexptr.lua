@@ -27,7 +27,7 @@ local state = {
     buf = nil,
     tree = {},
     expanded = vim.g.native_explorer_expanded or {},
-    clipboard = nil, -- { path = string, cut = boolean }
+    clipboard = nil,
 }
 
 -- ====================================================================================
@@ -56,7 +56,7 @@ local function scandir(path)
         if a.type == b.type then 
             return a.name < b.name
         end
-        return a.type == 'directory'
+        return a.type == "directory"
     end)
 
     return items
@@ -71,16 +71,16 @@ local function copy_recursive(src, dest)
     local stat = uv.fs_stat(src)
     if not stat then return end
 
-    if stat.type == 'file' then
-        fn.mkdir(fn.fnamemodify(dest, ':h'), 'p')
-        local data = assert(io.open(src, 'rb')):read('*all')
-        local f = assert(io.open(dest, 'wb'))
+    if stat.type == "file" then
+        fn.mkdir(fn.fnamemodify(dest, ":h"), "p")
+        local data = assert(io.open(src, "rb")):read("*all")
+        local f = assert(io.open(dest, "wb"))
         f:write(data)
         f:close()
-    elseif stat.type == 'directory' then
-        fn.mkdir(dest, 'p')
+    elseif stat.type == "directory" then
+        fn.mkdir(dest, "p")
         for _, item in ipairs(scandir(src)) do
-            copy_recursive(src .. '/' .. item.name, dest .. '/' .. item.name)
+            copy_recursive(src .. "/" .. item.name, dest .. "/" .. item.name)
         end
     end
 end
@@ -99,25 +99,24 @@ local function build_tree(path, depth)
     if not ok or not items then return nodes end
 
     for _, item in ipairs(items) do
-        local full = path .. '/' .. item.name
+        local full = path .. "/" .. item.name
 
-        if item.type == 'directory' then
+        if item.type == "directory" then
             local current = full
             local name_chain = { item.name }
 
             while true do
                 local items = scandir(current)
-                if #items ~= 1 or items[1].type ~= 'directory' then
+                if #items ~= 1 or items[1].type ~= "directory" then
                     break
                 end
-                current = current .. '/' .. items[1].name
+                current = current .. "/" .. items[1].name
                 name_chain[#name_chain + 1] = items[1].name
-                -- table.insert(name_chain, items[1].name)
             end
 
             --table.insert(nodes, {
             nodes[#nodes + 1] = {
-                name = table.concat(name_chain, '/'),
+                name = table.concat(name_chain, "/"),
                 path = current,
                 depth = depth,
                 is_dir = true,
@@ -128,14 +127,13 @@ local function build_tree(path, depth)
                 vim.list_extend(nodes, build_tree(current, depth + 1))
             end
         else
-            --table.insert(nodes, {
             nodes[#nodes + 1] = {
                 name = item.name,
                 path = full,
                 depth = depth,
                 is_dir = false,
             }
-            --})
+
         end
     end
 
@@ -148,27 +146,22 @@ local function render()
     if not state.buf then return end
     state.tree = build_tree(state.root) or {}
 
-    -- local lines = {}
     local lines = {
-        '~ ' .. fn.fnamemodify(state.root, ':t'):upper()
+        "~ " .. fn.fnamemodify(state.root, ":t"):upper()
     }
 
-    -- root label
-    -- table.insert(lines, '~ ' .. string.upper(fn.fnamemodify(state.root, ':t')))
-
     for _, node in ipairs(state.tree) do
-        local indent = string.rep('  ', node.depth)
+        local indent = string.rep("  ", node.depth)
         local icon = node.is_dir
-            and (state.expanded[node.path] and '' or '')
-            or '󰈙'
+            and (state.expanded[node.path] and "" or "")
+            or "󰈙"
 
-        -- table.insert(lines, indent .. icon .. ' ' .. node.name)
-        lines[#lines + 1] = indent .. icon .. ' ' .. node.name
+        lines[#lines + 1] = indent .. icon .. " " .. node.name
     end
 
-    api.nvim_buf_set_option(state.buf, 'modifiable', true)
+    api.nvim_buf_set_option(state.buf, "modifiable", true)
     api.nvim_buf_set_lines(state.buf, 0, -1, false, lines)
-    api.nvim_buf_set_option(state.buf, 'modifiable', false)
+    api.nvim_buf_set_option(state.buf, "modifiable", false)
 
 end
 
@@ -187,7 +180,7 @@ local function get_base_path()
     local node = get_node()
     if not node then return state.root end
     if node.is_dir then return node.path end
-    return fn.fnamemodify(node.path, ':h')
+    return fn.fnamemodify(node.path, ":h")
 end
 
 -- ====================================================================================
@@ -196,11 +189,11 @@ end
 ---@param path string
 local function open_in_right_window(path)
     api.nvim_set_current_win(state.win)
-    vim.cmd('wincmd l')
+    vim.cmd("wincmd l")
     if api.nvim_get_current_win() == state.win then
-        vim.cmd('vsplit | wincmd l')
+        vim.cmd("vsplit | wincmd l")
     end
-    vim.cmd('edit ' .. fn.fnameescape(path))
+    vim.cmd("edit " .. fn.fnameescape(path))
 end
 
 -- ====================================================================================
@@ -222,16 +215,16 @@ end
 -- Create file or folder
 function M.create_()
     local base = get_base_path()
-    local name = fn.input('Create: ')
-    if name == '' then return end
+    local name = fn.input("Create: ")
+    if name == "" then return end
 
-    local path = base .. '/' .. name
+    local path = base .. "/" .. name
 
-    if name:sub(-1) == '/' then
-        fn.mkdir(path, 'p')
+    if name:sub(-1) == "/" then
+        fn.mkdir(path, "p")
     else
-        fn.mkdir(fn.fnamemodify(path, ':h'), 'p')
-        local fd = uv.fs_open(path, 'w', 420)
+        fn.mkdir(fn.fnamemodify(path, ":h"), "p")
+        local fd = uv.fs_open(path, "w", 420)
         if fd then uv.fs_close(fd) end
     end
 
@@ -274,10 +267,10 @@ function M.delete_()
     local node = get_node()
     if not node then return end
 
-    if fn.confirm('Delete ' .. node.name .. '?', '&Yes\n&No') ~= 1 then return end
+    if fn.confirm("Delete " .. node.name .. "?", "&Yes\n&No") ~= 1 then return end
 
     if node.is_dir then
-        fn.delete(node.path, 'rf')
+        fn.delete(node.path, "rf")
     else
         uv.fs_unlink(node.path)
     end
@@ -296,19 +289,16 @@ end
 function M.paste_()
     if not state.clipboard then return end
 
-    -- local node = get_node()
-    -- local dest = node and (node.is_dir and node.path or fn.fnamemodify(node.path, ":h")) or state.root
-    -- local target = dest .. "/" .. fn.fnamemodify(state.clipboard.path, ":t")
     local dest_dir = get_base_path()
-    local target = dest_dir .. '/' .. fn.fnamemodify(state.clipboard.path, ':t')
+    local target = dest_dir .. "/" .. fn.fnamemodify(state.clipboard.path, ":t")
 
     if target:sub(1, #state.clipboard.path) == state.clipboard.path then
-        vim.notify('Cannot move directory into itself', vim.log.levels.ERROR)
+        vim.notify("Cannot move directory into itself", vim.log.levels.ERROR)
         return
     end
 
     if state.clipboard.cut then
-        fn.mkdir(fn.fnamemodify(target, ':h'), 'p')
+        fn.mkdir(fn.fnamemodify(target, ":h"), "p")
         uv.fs_rename(state.clipboard.path, target)
         state.clipboard = nil
     else
@@ -328,34 +318,32 @@ function M.toggle()
     end
 
     state.buf = api.nvim_create_buf(false, true)
-    vim.bo[state.buf].buftype = 'nofile'
-    vim.bo[state.buf].bufhidden = 'wipe'
+    vim.bo[state.buf].buftype = "nofile"
+    vim.bo[state.buf].bufhidden = "wipe"
     vim.bo[state.buf].swapfile = false
-    -- vim.bo[state.buf].filetype = 'Explorer'
 
-    vim.cmd('topleft 30vsplit')
+    vim.cmd("topleft 30vsplit")
     state.win = api.nvim_get_current_win()
     api.nvim_win_set_buf(state.win, state.buf)
 
     vim.wo[state.win].number = false
     vim.wo[state.win].relativenumber = false
-    vim.wo[state.win].signcolumn = 'no'
+    vim.wo[state.win].signcolumn = "no"
 
     local map = function(lhs, rhs)
-        vim.keymap.set('n', lhs, rhs, { buffer = state.buf, silent = true })
+        vim.keymap.set("n", lhs, rhs, { buffer = state.buf, silent = true })
     end
 
     -- mapping
-    map('<CR>', M.open)
-    map('o', M.open)
-    map('a', M.create_)
-    map('r', M.rename_)
-    map('d', M.delete_)
-    map('y', function() M.copy_(false) end)
-    map('x', function() M.copy_(true) end)
-    map('p', M.paste_)
-    map('q', M.toggle)
-    map('<leader>e', M.toggle)
+    map("<CR>", M.open)
+    map("o", M.open)
+    map("a", M.create_)
+    map("r", M.rename_)
+    map("d", M.delete_)
+    map("y", function() M.copy_(false) end)
+    map("x", function() M.copy_(true) end)
+    map("p", M.paste_)
+    map("q", M.toggle)
 
     render()
 end
