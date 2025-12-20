@@ -197,34 +197,8 @@ vim.keymap.set('n', '<leader>e', function()
   require('fexptr').toggle()
 end, { desc = 'Toggle Native Explorer' })
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+-- Statusline
+-- vim.opt.statusline = "%{%substitute(expand('%:~'),'\\\\','/','g')%} %h%m%r"
+vim.opt.laststatus = 3
+vim.opt.statusline =
+  "%{%substitute(fnamemodify(bufname('%'),':~:.'),'\\\\','/','g')%} %h%m%r"
