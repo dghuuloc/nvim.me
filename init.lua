@@ -198,6 +198,9 @@ vim.api.nvim_create_autocmd('LspAttach', {
 
 -- Native Neovim File Explorer (lua)
 vim.keymap.set('n', '<leader>e', function()
-  require('fexptr').toggle()
+  require('fexptr-single').toggle()
 end, { desc = 'Toggle Native Explorer' })
+
+require("fexptr").setup({})
+vim.keymap.set("n", "<leader>E", "<cmd>Fexptr<CR>")
 
