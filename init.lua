@@ -201,6 +201,4 @@ vim.keymap.set('n', '<leader>E', function()
   require('fexptr-single').toggle()
 end, { desc = 'Toggle Native Explorer' })
 
-require("fexptr").setup({})
-vim.keymap.set("n", "<leader>e", "<cmd>FexptrToggle<CR>", { noremap = true, silent = true, desc = "Toggle Native Explorer" })
 
