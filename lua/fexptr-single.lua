@@ -180,11 +180,11 @@ local function get_node()
 end
 
 ---@return string
-local function base_path()
-    local node = get_node()
-    if not node then return state.root end
-    return node.is_dir and node.path or fn.fnamemodify(node.path, ":h")
-end
+-- local function base_path()
+--     local node = get_node()
+--     if not node then return state.root end
+--     return node.is_dir and node.path or fn.fnamemodify(node.path, ":h")
+-- end
 
 -- ====================================================================================
 -- Actions
