@@ -1,0 +1,14 @@
+require("sqldev")
+-- setup({
+--   sources = {
+--     require("sqldev.sources.memory"):new({
+--       {
+--         name = "Local MySQL",
+--         type = "mysql",
+--         host = "localhost",
+--         user = "root",
+--         database = "test",
+--       },
+--     }),
+--   },
+-- })
