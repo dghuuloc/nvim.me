@@ -19,6 +19,7 @@ To find the full list of places where you we put a package, run `:set packpath?`
 
 ---
 ## Installation
+
 ### Post installation
 Below you can find OS specific install instructions for Neovim and dependencies.
 #### Windows Installation
@@ -39,15 +40,30 @@ choco install -y neovim git ripgrep wget fd unzip gzip mingw make
 ```
 </details>
 
+---
 ### Install Recipes
-- __To install on Linux/Mac, open terminal and then run the command below__
-```shell
+#### Linux
+* Uninstall
+```bash
+rm -rf ~/.config/nvim
+rm -rf ~/.local/state/nvim
+rm -rf ~/.local/share/nvim
+```
+
+* To install on Linux/Mac, open terminal and then run the command below
+```bash
 git clone --recursive https://github.com/dghuuloc/Neovim.Config.git ~/.config/nvim
 ```
-- __Windows__
+
+#### Windows
+* Uninstall
 ```shell
 rm -r -fo $env:LOCALAPPDATA/nvim
 rm -r -fo $env:LOCALAPPDATA/nvim-data
+```
+
+* Install
+```shell
 git clone --recursive https://github.com/dghuuloc/Neovim.Config.git $env:LOCALAPPDATA/nvim
 rm -r -fo $env:LOCALAPPDATA/nvim/.git
 ```
