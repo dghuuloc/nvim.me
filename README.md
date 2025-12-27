@@ -1,6 +1,15 @@
 # nvim.me
 ---
 
+## Recommended Fonts
+A [Nerd Fonts](https://www.nerdfonts.com/font-downloads) is required to see all the icons inside neovim. Here, I'm using [JetBrainsMono Nerd Font](https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/JetBrainsMono.zip) for Windows Terminal Settings
+
+```
+Color scheme:        One Half Dark
+Font face:           JetBrainsMonoNL Nerd Font
+Font-size:           11
+```
+
 ## How do I install a package in Neovim without a package manager?
 In Neovim, we can install plugins into `~/.config/nvim/pack/FOOBAR/start/` (replacing `FOOBAR` with any directory name you choose), similarly to how we can use [Vim 8.0's native support for packages](https://vi.stackexchange.com/questions/9522/what-is-the-vim8-package-feature-and-how-should-i-use-it).
 
