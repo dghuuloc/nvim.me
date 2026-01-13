@@ -52,7 +52,7 @@ rm -rf ~/.local/share/nvim
 
 * To install on Linux/Mac, open terminal and then run the command below
 ```bash
-git clone --recursive https://github.com/dghuuloc/Neovim.Config.git ~/.config/nvim
+git clone --recursive https://github.com/dghuuloc/nvim.me.git ~/.config/nvim
 ```
 
 #### Windows
