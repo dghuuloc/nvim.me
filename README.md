@@ -64,7 +64,7 @@ rm -r -fo $env:LOCALAPPDATA/nvim-data
 
 * Install
 ```shell
-git clone --recursive https://github.com/dghuuloc/Neovim.Config.git $env:LOCALAPPDATA/nvim
+git clone --recursive https://github.com/dghuuloc/nvim.me.git $env:LOCALAPPDATA/nvim
 rm -r -fo $env:LOCALAPPDATA/nvim/.git
 ```
 
