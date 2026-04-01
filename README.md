@@ -1,7 +1,9 @@
 # nvim.me
 ---
 
-**Requires NeoVim 0.12 or later**
+## Prerequisites
+* Neovim: `>= 0.12.0` (`nightly` right now).
+* Basic Lua knowledge.
 
 ## Recommended Fonts
 A [Nerd Fonts](https://www.nerdfonts.com/font-downloads) is required to see all the icons inside neovim. Here, I'm using [JetBrainsMono Nerd Font](https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/JetBrainsMono.zip) for Windows Terminal Settings
