@@ -2,49 +2,57 @@
 -- title : Native NeoVim Config
 -- author: dghuuloc
 -- neovim version: NVIM v0.12.0
--- ================================================================================================-------------------------------------------------------------------------------------------------
+-- ================================================================================================
 
--- theme
+-- #theme
 vim.cmd.colorscheme("unokai")
+vim.opt.termguicolors = true                 
 vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
 vim.api.nvim_set_hl(0, "NormalNC", { bg = "none" })
 vim.api.nvim_set_hl(0, "EndOfBuffer", { bg = "none" })
 
--- Key mappings
+-- #key mappings 
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
-vim.opt.encoding = "utf-8"
+vim.opt.hidden = true                       -- allow hidden buffers
+vim.opt.errorbells = false                  -- no error sounds
+vim.opt.backspace = "indent,eol,start"      -- better backspace behaviour
+vim.opt.autochdir = false                   -- do not autochange directories
+vim.opt.iskeyword:append("-")               -- include - in words
+vim.opt.path:append("**")                   -- include subdirs in search
+vim.opt.selection = "inclusive"             -- include last char in selection
+vim.opt.encoding = "utf-8"                  -- set encoding
 vim.opt.syntax = 'on'
-vim.opt.termguicolors = true
-vim.opt.clipboard = 'unnamedplus'
-vim.opt.mouse = 'a'
+vim.opt.clipboard = 'unnamedplus'           -- use system clipboard
+vim.opt.mouse = 'a'                         -- enable mouse support
 
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.cursorline = true
 
-vim.opt.tabstop = 4
-vim.opt.softtabstop = 4
-vim.opt.shiftwidth = 4
-vim.opt.expandtab = true
-vim.opt.smartindent = true
+vim.opt.tabstop = 4                         -- tabwidth
+vim.opt.shiftwidth = 4                      -- indent width
+vim.opt.softtabstop = 4                     -- soft tab stop not tabs or tab/backspace
+vim.opt.expandtab = true                    -- use spaces instead of tabs
+vim.opt.smartindent = true                  -- smart auto-indent
 
-vim.opt.scrolloff = 10
-vim.opt.sidescrolloff = 8 
+vim.opt.scrolloff = 10                      -- keep 10 lines above/below cursor
+vim.opt.sidescrolloff = 10                  -- keep 10 lines to left/right of cursor
 
-vim.opt.hlsearch = true
-vim.opt.smartcase = true
-vim.opt.ignorecase = true
+vim.opt.ignorecase = true                   -- case insensitive search
+vim.opt.smartcase = true                    -- case sensitive if uppercase in string
+vim.opt.hlsearch = true                     -- highlight search matches
+vim.opt.incsearch = true                    -- show matches as you type
 
 vim.opt.splitbelow = true
 vim.opt.splitright = true
 
-vim.opt.wrap = false
-vim.opt.swapfile = false
-vim.opt.writebackup = false
-vim.opt.updatetime = 50
-vim.opt.cmdheight = 1
+vim.opt.wrap = false                        -- do not wrap lines by default
+vim.opt.swapfile = false                    -- do not create a swapfile
+vim.opt.writebackup = false                 -- do not write to a backup file
+vim.opt.updatetime = 50                     -- faster completion
+vim.opt.cmdheight = 1                       -- single line command line
 
 vim.opt.guicursor = {
     'n-v-c:block',        -- normal, visual, command
@@ -72,10 +80,10 @@ vim.keymap.set('x', 'J', ':move \'>+1<CR>gv-gv', {noremap = true, silent = true,
 vim.cmd([[set whichwrap+=<,>,[,],h,l]])
 
 -- Prevent neovim commenting out next line after a comment line
-vim.api.nvim_create_autocmd('FileType', {
-    pattern = '*',
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = "*",
     callback = function()
-        vim.opt_local.formatoptions:remove({ 'r', 'o' })
+        vim.opt_local.formatoptions:remove({ "r", "o" })
     end,
 })
 
@@ -106,15 +114,17 @@ vim.api.nvim_create_autocmd('FileType', {
     end,
 })
 
--- ================================================================================================
--- lsp
--- ================================================================================================-------------------------------------------------------------------------------------------------
 -- Function to find project root
 local function find_root(patterns)
     local path = vim.fn.expand('%:p:h')
     local root = vim.fs.find(patterns, { path = path, upward = true })[1]
     return root and vim.fn.fnamemodify(root, ':h') or path
 end
+
+-- #vim.pack
+-- vim.pack.add({
+--     { src = "https://github.com/dghuuloc/fexptr.nvim" }
+-- })
 
 -- Shell lsp setup
 -- local function setup_shell_lsp() 
@@ -169,7 +179,7 @@ end
 --     desc = 'Start Python LSP'
 -- })
 
--- LSP keymaps
+-- #LSP keymaps
 vim.api.nvim_create_autocmd('LspAttach', {
     callback = function(event)
         local opts = { buffer = event.buf }
