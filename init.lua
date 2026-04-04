@@ -5,7 +5,8 @@
 -- ================================================================================================
 
 -- #theme
-vim.cmd.colorscheme("unokai")
+-- vim.cmd.colorscheme("unokai")
+vim.cmd.colorscheme("catppuccin")
 vim.opt.termguicolors = true
 vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
 vim.api.nvim_set_hl(0, "NormalNC", { bg = "none" })
@@ -88,11 +89,8 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 -- #autocmds
-local augroup = vim.api.nvim_create_augroup("UserConfig", { clear = true })
-
 -- Highlight yanked text
 vim.api.nvim_create_autocmd('TextYankPost', {
-    group = augroup,
     callback = function()
         vim.highlight.on_yank()
     end,
@@ -100,7 +98,6 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 
 -- Set filetype-specific settings
 vim.api.nvim_create_autocmd('FileType', {
-    group = augroup,
     pattern = { 'lua', 'java', 'python' },
     callback = function()
         vim.opt_local.tabstop = 4
@@ -109,7 +106,6 @@ vim.api.nvim_create_autocmd('FileType', {
 })
 
 vim.api.nvim_create_autocmd('FileType', {
-    group = augroup,
     pattern = { 'json', 'html', 'css' },
     callback = function()
         vim.opt_local.tabstop = 2
@@ -139,7 +135,6 @@ vim.pack.add({
 
 -- #floating terminal
 vim.api.nvim_create_autocmd("TermClose", {
-	group = augroup,
 	callback = function()
 		if vim.v.event.status == 0 then
 			vim.api.nvim_buf_delete(0, {})
@@ -148,7 +143,6 @@ vim.api.nvim_create_autocmd("TermClose", {
 })
 
 vim.api.nvim_create_autocmd("TermOpen", {
-	group = augroup,
 	callback = function()
 		vim.opt_local.number = false
 		vim.opt_local.relativenumber = false

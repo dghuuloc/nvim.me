@@ -122,7 +122,9 @@ local function lsp_on_attach(ev)
 	end
 end
 
-vim.api.nvim_create_autocmd("LspAttach", { group = augroup, callback = lsp_on_attach })
+vim.api.nvim_create_autocmd("LspAttach", {
+    callback = lsp_on_attach
+})
 
 vim.keymap.set("n", "<leader>q", function()
 	vim.diagnostic.setloclist({ open = true })
@@ -158,14 +160,16 @@ vim.lsp.config["*"] = {
 	capabilities = require("blink.cmp").get_lsp_capabilities(),
 }
 
-vim.lsp.config("lua_ls", {
-	settings = {
-		Lua = {
-			diagnostics = { globals = { "vim" } },
-			telemetry = { enable = false },
-		},
-	},
-})
+-- vim.lsp.config("lua_ls", {
+-- 	settings = {
+-- 		Lua = {
+--             runtime = { version = "LuaJIT" },
+-- 			diagnostics = { globals = { "vim", "require" } },
+--             workspace = { libary = vim.api.nvim_get_runtime_file("", true) },
+-- 			telemetry = { enable = false },
+-- 		},
+-- 	},
+-- })
 
 vim.lsp.config("pyright", {})
 vim.lsp.config("ts_ls", {})
@@ -176,40 +180,6 @@ vim.lsp.enable({
 	"ts_ls"
 })
 
--- ~/.config/nvim-new/lsp/lua_ls.lua
----@type vim.lsp.Config
--- return {
---     cmd = { 'lua-language-server' },
---     filetypes = { 'lua' },
---     root_markers = {
---         '.luarc.json',
---         '.luarc.jsonc',
---         '.luacheckrc',
---         '.stylua.toml',
---         'stylua.toml',
---         'selene.toml',
---         'selene.yml',
---         '.git',
---     },
---     settings = {
---         Lua = {
---             runtime = {
---                 version = "Lua 5.4",
---             },
---             completion = {
---                 enable = true,
---             },
---             diagnostics = {
---                 enable = true,
---                 globals = { "vim" },
---             },
---             workspace = {
---                 library = { vim.env.VIMRUNTIME },
---                 checkThirdParty = false,
---             },
---         },
---     },
--- }
 
 -- Shell lsp setup
 -- local function setup_shell_lsp()

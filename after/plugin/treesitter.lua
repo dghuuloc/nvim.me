@@ -6,17 +6,19 @@ end
 local parsers = {
     "vim",
     "vimdoc",
-    "json",
     "markdown",
     "rust",
     "lua",
     "typescript",
+    "javascript",
+    "html",
+    "css",
+    "csv",
     "python",
     "java",
     "json",
     "yaml",
-    "bash",
-    "markdown"
+    "bash"
 }
 
 nts.setup({
