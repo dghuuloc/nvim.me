@@ -131,6 +131,13 @@ vim.keymap.set("n", "<leader>q", function()
 end, { desc = "Open diagnostic list" })
 vim.keymap.set("n", "<leader>dl", vim.diagnostic.open_float, { desc = "Show line diagnostics" })
 
+-- keymap("n", "<leader>lf", function()
+--     vim.lsp.buf.format({ async = true })
+-- end, { desc = "Format file", unpack(opts) })
+-- keymap("n", "<leader>ld", vim.diagnostic.open_float, { desc = "Show diagnostics", unpack(opts) })
+-- keymap("n", "<leader>ln", vim.diagnostic.goto_next, { desc = "Next diagnostic", unpack(opts) })
+-- keymap("n", "<leader>lp", vim.diagnostic.goto_prev, { desc = "Prev diagnostic", unpack(opts) })
+
 require("blink.cmp").setup({
 	keymap = {
 		preset = "none",

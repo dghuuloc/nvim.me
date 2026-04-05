@@ -10,7 +10,7 @@
       "version": "1.0.0 - 2.0.0"
     },
     "fexptr.nvim": {
-      "rev": "efa4ed65386671569727fd0736343fc3556cfbf0",
+      "rev": "e75a28134b56085b8add09cc236a3522d6415ba1",
       "src": "https://github.com/dghuuloc/fexptr.nvim"
     },
     "fzf-lua": {
@@ -37,6 +37,10 @@
       "rev": "4916d6592ede8c07973490d9322f187e07dfefac",
       "src": "https://github.com/nvim-treesitter/nvim-treesitter",
       "version": "'main'"
+    },
+    "tokyonight.nvim": {
+      "rev": "cdc07ac78467a233fd62c493de29a17e0cf2b2b6",
+      "src": "https://github.com/folke/tokyonight.nvim"
     }
   }
 }

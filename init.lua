@@ -5,12 +5,8 @@
 -- ================================================================================================
 
 -- #theme
--- vim.cmd.colorscheme("unokai")
-vim.cmd.colorscheme("catppuccin")
+-- vim.cmd.colorscheme("catppuccin")
 vim.opt.termguicolors = true
-vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
-vim.api.nvim_set_hl(0, "NormalNC", { bg = "none" })
-vim.api.nvim_set_hl(0, "EndOfBuffer", { bg = "none" })
 
 -- #key mappings
 vim.g.mapleader = " "
@@ -24,7 +20,7 @@ vim.opt.iskeyword:append("-")               -- include - in words
 vim.opt.path:append("**")                   -- include subdirs in search
 vim.opt.selection = "inclusive"             -- include last char in selection
 vim.opt.encoding = "utf-8"                  -- set encoding
-vim.opt.syntax = 'on'
+vim.opt.syntax = 'off'                      -- nvim-treesitter replaces it
 vim.opt.clipboard = 'unnamedplus'           -- use system clipboard
 vim.opt.mouse = 'a'                         -- enable mouse support
 
@@ -54,6 +50,11 @@ vim.opt.swapfile = false                    -- do not create a swapfile
 vim.opt.writebackup = false                 -- do not write to a backup file
 vim.opt.updatetime = 50                     -- faster completion
 vim.opt.cmdheight = 1                       -- single line command line
+vim.opt.whichwrap:append("<,>,[,],h,l")     -- Get h and l for moving over next lines or previous lines 
+-- vim.cmd([[set whichwrap+=<,>,[,],h,l]])
+
+vim.opt.undofile  = true                  -- persist undo history across sessions
+vim.opt.undodir   = vim.fn.stdpath("data") .. "/undodir"
 
 vim.opt.guicursor = {
     'n-v-c:block',        -- normal, visual, command
@@ -77,8 +78,8 @@ vim.keymap.set('n', '<S-TAB>', ':bprevious<CR>', {noremap = true, silent = true,
 vim.keymap.set('x', 'K', ':move \'<-2<CR>gv-gv', {noremap = true, silent = true, desc = 'Move selection up' })
 vim.keymap.set('x', 'J', ':move \'>+1<CR>gv-gv', {noremap = true, silent = true, desc = 'Move selection down' })
 
--- Get h and l for moving over next lines or previous lines
-vim.cmd([[set whichwrap+=<,>,[,],h,l]])
+-- nohlsearch
+vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<cr>", { desc = "clear search highlight" })
 
 -- Prevent neovim commenting out next line after a comment line
 vim.api.nvim_create_autocmd("FileType", {
@@ -119,10 +120,43 @@ require("me.mini")
 require("me.gitsigns")
 require("me.lsp")
 
+-- colorscheme
+vim.pack.add({
+    { src = "https://github.com/folke/tokyonight.nvim" },
+})
+local ok, tokyonight = pcall(require, "tokyonight")
+if ok then
+    tokyonight.setup({ style = "storm" })
+     pcall(vim.cmd.colorscheme, "tokyonight")
+else
+    vim.cmd.colorscheme("catppuccin")
+end
+-- vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
+-- vim.api.nvim_set_hl(0, "NormalNC", { bg = "none" })
+-- vim.api.nvim_set_hl(0, "EndOfBuffer", { bg = "none" })
+
 -- fexptr.nvim
 vim.pack.add({
     { src = "https://github.com/dghuuloc/fexptr.nvim" },
 })
+
+-- ── fexptr file explorer ──────────────────────────────────────────────────────
+local ok_fex, fex = pcall(require, "fexptr")
+if ok_fex then
+    fex.setup({
+        width           = 35,
+        show_hidden     = false,
+        folder_indicators = { open = "▾", closed = "▸" },
+        -- icons = { folder_open = "", folder_closed = "", file = "󰈙" },
+        icons = {
+            folder_closed = "",
+            folder_open   = "",
+            file          = "󰈙",
+        },
+    })
+    vim.keymap.set("n","<leader>e","<cmd>FexptrToggle<CR>",
+        { noremap=true, silent=true, desc="toggle file explorer" })
+end
 
 -- nvim-treesitter
 vim.pack.add({

@@ -1,32 +1,30 @@
 local ok, nts = pcall(require, "nvim-treesitter")
 if not ok then
-  return
+    return
 end
 
 local parsers = {
     "vim",
     "vimdoc",
+    "json",
     "markdown",
     "rust",
     "lua",
     "typescript",
-    "javascript",
-    "html",
-    "css",
-    "csv",
     "python",
     "java",
     "json",
     "yaml",
-    "bash"
+    "bash",
+    "markdown"
 }
 
 nts.setup({
-  install_dir = vim.fn.stdpath("data") .. "/site",
+    install_dir = vim.fn.stdpath("data") .. "/site",
 })
 
 vim.api.nvim_create_user_command("TSInstallMyParsers", function()
-  nts.install(parsers)
+    nts.install(parsers)
 end, { desc = "Install my Treesitter parsers" })
 
 local group = vim.api.nvim_create_augroup("MyTreeSitter", { clear = true })
