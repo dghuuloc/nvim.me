@@ -28,11 +28,12 @@ vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.cursorline = true
 
-vim.opt.tabstop = 4                         -- tabwidth
-vim.opt.shiftwidth = 4                      -- indent width
-vim.opt.softtabstop = 4                     -- soft tab stop not tabs or tab/backspace
+vim.opt.tabstop = 4                         -- how many spaces tab inserts
+vim.opt.shiftwidth = 4                      -- controls number of spaces when using >> or << commands
+vim.opt.softtabstop = 4                     -- how many spaces tab inserts
 vim.opt.expandtab = true                    -- use spaces instead of tabs
-vim.opt.smartindent = true                  -- smart auto-indent
+vim.opt.smartindent = true                  -- indenting correctly after {
+vim.opt.autoindent = true                     -- copy indent from current line when starting new line
 
 vim.opt.scrolloff = 10                      -- keep 10 lines above/below cursor
 vim.opt.sidescrolloff = 10                  -- keep 10 lines to left/right of cursor
@@ -46,6 +47,7 @@ vim.opt.splitbelow = true
 vim.opt.splitright = true
 
 vim.opt.wrap = false                        -- do not wrap lines by default
+vim.opt.breakindent = true                  -- prevent line wrapping
 vim.opt.swapfile = false                    -- do not create a swapfile
 vim.opt.writebackup = false                 -- do not write to a backup file
 vim.opt.updatetime = 50                     -- faster completion
@@ -53,8 +55,9 @@ vim.opt.cmdheight = 1                       -- single line command line
 vim.opt.whichwrap:append("<,>,[,],h,l")     -- Get h and l for moving over next lines or previous lines 
 -- vim.cmd([[set whichwrap+=<,>,[,],h,l]])
 
-vim.opt.undofile  = true                  -- persist undo history across sessions
+vim.opt.undofile  = true                    -- persist undo history across sessions
 vim.opt.undodir   = vim.fn.stdpath("data") .. "/undodir"
+vim.diagnostic.config({ virtual_text = true }) -- inline diagnostics
 
 vim.opt.guicursor = {
     'n-v-c:block',        -- normal, visual, command
@@ -68,6 +71,9 @@ vim.opt.guicursor = {
 vim.opt.laststatus = 3
 vim.opt.statusline = "%{%substitute(fnamemodify(bufname('%'),':~:.'),'\\\\','/','g')%} %h%m%r"
 
+-- Disable Space bar since it will be used as the leader key
+vim.keymap.set({ "n", "v" }, "<leader>", "<nop>")
+
 -- Buffer navigation
 vim.keymap.set('n', '<TAB>', ':bnext<CR>', {noremap = true, silent = true, desc = 'Buffer Next'})
 vim.keymap.set('n', '<S-TAB>', ':bprevious<CR>', {noremap = true, silent = true, desc = 'Buffer Previous'})
@@ -78,22 +84,35 @@ vim.keymap.set('n', '<S-TAB>', ':bprevious<CR>', {noremap = true, silent = true,
 vim.keymap.set('x', 'K', ':move \'<-2<CR>gv-gv', {noremap = true, silent = true, desc = 'Move selection up' })
 vim.keymap.set('x', 'J', ':move \'>+1<CR>gv-gv', {noremap = true, silent = true, desc = 'Move selection down' })
 
--- nohlsearch
+-- after a search, press escape to clear highlights
 vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<cr>", { desc = "clear search highlight" })
 
--- Prevent neovim commenting out next line after a comment line
-vim.api.nvim_create_autocmd("FileType", {
-    pattern = "*",
-    callback = function()
-        vim.opt_local.formatoptions:remove({ "r", "o" })
-    end,
-})
+-- Little one from Primeagen to mass replace string in a file
+-- vim.keymap.set("n", "<leader>s", [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], { silent = false })
+
+-- Paste without replacing paste with what you are highlighted over
+vim.keymap.set("n", "<leader>p", '"_dP')
+
+-- Exit terminal with Esc
+vim.keymap.set("t", "<Esc>", "<C-\\><C-N>")
 
 -- #autocmds
+-- prevent neovim commenting out next line after a comment line
+vim.api.nvim_create_autocmd("FileType", {
+	group = vim.api.nvim_create_augroup("no_auto_comment", {}),
+    pattern = "*",
+	callback = function()
+		vim.opt_local.formatoptions:remove({ "c", "r", "o" })
+	end,
+})
+
 -- Highlight yanked text
 vim.api.nvim_create_autocmd('TextYankPost', {
+    group = vim.api.nvim_create_augroup("highlight_yank", { clear = true }),
+    pattern = "*",
+    desc = "highlight selection on yank",
     callback = function()
-        vim.highlight.on_yank()
+        vim.highlight.on_yank({ timeout = 200, visual = true })
     end,
 })
 
@@ -112,6 +131,36 @@ vim.api.nvim_create_autocmd('FileType', {
         vim.opt_local.tabstop = 2
         vim.opt_local.shiftwidth = 2
     end,
+})
+
+-- auto resize splits when the terminal's window is resized
+vim.api.nvim_create_autocmd("VimResized", {
+	command = "wincmd =",
+})
+
+
+-- restore cursor to file position in previous editing session
+vim.api.nvim_create_autocmd("BufReadPost", {
+	callback = function(args)
+		local mark = vim.api.nvim_buf_get_mark(args.buf, '"')
+		local line_count = vim.api.nvim_buf_line_count(args.buf)
+		if mark[1] > 0 and mark[1] <= line_count then
+			vim.api.nvim_win_set_cursor(0, mark)
+			-- defer centering slightly so it's applied after render
+			vim.schedule(function()
+				vim.cmd("normal! zz")
+			end)
+		end
+	end,
+})
+
+-- syntax highlighting for dotenv files
+vim.api.nvim_create_autocmd("BufRead", {
+	group = vim.api.nvim_create_augroup("dotenv_ft", { clear = true }),
+	pattern = { ".env", ".env.*" },
+	callback = function()
+		vim.bo.filetype = "dosini"
+	end,
 })
 
 -- #vim.pack.add plugins

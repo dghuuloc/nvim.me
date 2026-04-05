@@ -19,25 +19,38 @@ local diagnostic_signs = {
 }
 
 vim.diagnostic.config({
-	virtual_text = { prefix = "●", spacing = 4 },
+	virtual_text = {
+        prefix = "●",
+        spacing = 4,
+        severity = { min = vim.diagnostic.severity.WARN },
+    },
 	signs = {
 		text = {
 			[vim.diagnostic.severity.ERROR] = diagnostic_signs.Error,
-			[vim.diagnostic.severity.WARN] = diagnostic_signs.Warn,
-			[vim.diagnostic.severity.INFO] = diagnostic_signs.Info,
-			[vim.diagnostic.severity.HINT] = diagnostic_signs.Hint,
+			[vim.diagnostic.severity.WARN]  = diagnostic_signs.Warn,
+			[vim.diagnostic.severity.INFO]  = diagnostic_signs.Info,
+			[vim.diagnostic.severity.HINT]  = diagnostic_signs.Hint,
 		},
+        numhl = {
+            [vim.diagnostic.severity.ERROR] = "DiagnosticSignError",
+            [vim.diagnostic.severity.ERROR] = "DiagnosticSignWarn",
+        }
 	},
-	underline = true,
+	underline = { severity = { min = vim.diagnostic.severity.WARN } },
 	update_in_insert = false,
 	severity_sort = true,
 	float = {
 		border = "rounded",
-		source = "always",
+		source = true,
 		header = "",
 		prefix = "",
-		focusable = false,
-		style = "minimal",
+		focusable = true,
+		-- style = "minimal",
+        format  = function(d)
+            local src = d.source and ("[" .. d.source .. "] ") or ""
+            local code = d.code  and ("[" .. d.code .. "] ") or ""
+            return src .. d.message .. code
+        end,
 	},
 })
 
@@ -240,17 +253,3 @@ vim.lsp.enable({
 --     callback = setup_python_lsp,
 --     desc = 'Start Python LSP'
 -- })
-
-
--- ~/.config/nvim-new/lua/keymaps.lua
--- keymap("n", "<leader>ff", '<cmd>FzfLua files<CR>')
--- keymap("n", "<leader>fg", '<cmd>FzfLua live_grep<CR>')
-
--- ~/.config/nvim-new/lua/plugins.lua
--- vim.pack.add({
---     { src = "https://github.com/tpope/vim-fugitive" },
--- })
-
--- ~/.config/nvim-new/lua/keymaps.lua
--- keymap("n", "<leader>gs", '<cmd>Git<CR>', opts)
--- keymap("n", "<leader>gp", '<cmd>Git push<CR>', opts)
