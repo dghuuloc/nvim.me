@@ -1,8 +1,4 @@
 -- fzf-lua
-vim.pack.add({
-  { src = "https://github.com/ibhagwan/fzf-lua" }
-})
-
 local status_ok, fzf = pcall(require, "fzf-lua")
 if not status_ok then
   vim.schedule(function()

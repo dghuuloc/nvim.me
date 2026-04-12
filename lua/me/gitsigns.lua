@@ -1,8 +1,4 @@
 -- #gitsigns plugin
-vim.pack.add({
-  { src = "https://www.github.com/lewis6991/gitsigns.nvim" }
-})
-
 local status_ok, gitsigns = pcall(require, "gitsigns")
 if not status_ok then
   vim.schedule(function()

@@ -1,14 +1,3 @@
--- Language Server Protocols
-vim.pack.add({
-    { src = "https://github.com/neovim/nvim-lspconfig" },
-    { src = "https://github.com/mason-org/mason.nvim" },
-    -- { src = "https://github.com/mason-org/mason-lspconfig.nvim" },
-    { src = "https://github.com/saghen/blink.cmp",
-		version = vim.version.range("1.*"),
-    },
-    { src = "https://github.com/L3MON4D3/LuaSnip" }
-})
-
 require("mason").setup({})
 
 local diagnostic_signs = {
@@ -33,7 +22,7 @@ vim.diagnostic.config({
 		},
         numhl = {
             [vim.diagnostic.severity.ERROR] = "DiagnosticSignError",
-            [vim.diagnostic.severity.ERROR] = "DiagnosticSignWarn",
+            [vim.diagnostic.severity.WARN] = "DiagnosticSignWarn",
         }
 	},
 	underline = { severity = { min = vim.diagnostic.severity.WARN } },
@@ -133,6 +122,7 @@ local function lsp_on_attach(ev)
 			end, 50)
 		end, opts)
 	end
+
 end
 
 vim.api.nvim_create_autocmd("LspAttach", {
@@ -162,7 +152,14 @@ require("blink.cmp").setup({
 		["<S-Tab>"] = { "snippet_backward", "fallback" },
 	},
 	appearance = { nerd_font_variant = "mono" },
-	completion = { menu = { auto_show = true } },
+	completion = {
+        menu = { auto_show = true },
+        -- documentation = {
+        --     auto_show   = true,
+        --     auto_show_deplay_ms = 20,
+        --     window = { border = "rounded" },
+        -- },
+    },
 	sources = { default = { "lsp", "path", "buffer", "snippets" } },
 	snippets = {
 		expand = function(snippet)
@@ -197,7 +194,8 @@ vim.lsp.config("ts_ls", {})
 vim.lsp.enable({
 	"lua_ls",
 	"pyright",
-	"ts_ls"
+	"ts_ls",
+    "jsonls"
 })
 
 

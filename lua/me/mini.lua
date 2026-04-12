@@ -1,10 +1,3 @@
-
--- fzf-lua
-vim.pack.add({
-  { src = "https://github.com/nvim-mini/mini.nvim" }
-})
-
-
 require("mini.ai").setup({ n_lines = 500 })         -- better text objects: vin, van, vaf, vac
 
 require("mini.comment").setup({})                   -- gcc to commect, go in visual

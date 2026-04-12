@@ -4,6 +4,20 @@
 -- neovim version: NVIM v0.12.0
 -- ================================================================================================
 
+-- local config = vim.fn.stdpath("config")
+--
+-- vim.cmd.source(vim.fs.joinpath(config, "options.vim"))
+-- vim.cmd.source(vim.fs.joinpath(config, "mappings.vim"))
+-- dofile(vim.fs.joinpath(config, "commands.lua"))
+-- dofile(vim.fs.joinpath(config, "fugitive.lua"))
+
+-- vim.cmd(string.format([[
+--   source %s
+--   source %s
+-- ]], vim.fs.joinpath(config, "options.vim"), vim.fs.joinpath(config, "mappings.vim")))
+--
+-- dofile(vim.fs.joinpath(config, "commands.lua"))
+
 -- #theme
 -- vim.cmd.colorscheme("catppuccin")
 vim.opt.termguicolors = true
@@ -53,7 +67,6 @@ vim.opt.writebackup = false                 -- do not write to a backup file
 vim.opt.updatetime = 50                     -- faster completion
 vim.opt.cmdheight = 1                       -- single line command line
 vim.opt.whichwrap:append("<,>,[,],h,l")     -- Get h and l for moving over next lines or previous lines 
--- vim.cmd([[set whichwrap+=<,>,[,],h,l]])
 
 vim.opt.undofile  = true                    -- persist undo history across sessions
 vim.opt.undodir   = vim.fn.stdpath("data") .. "/undodir"
@@ -118,7 +131,7 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 
 -- Set filetype-specific settings
 vim.api.nvim_create_autocmd('FileType', {
-    pattern = { 'lua', 'java', 'python' },
+    pattern = { 'java', 'python' },
     callback = function()
         vim.opt_local.tabstop = 4
         vim.opt_local.shiftwidth = 4
@@ -126,7 +139,7 @@ vim.api.nvim_create_autocmd('FileType', {
 })
 
 vim.api.nvim_create_autocmd('FileType', {
-    pattern = { 'json', 'html', 'css' },
+    pattern = { 'lua', 'json', 'html', 'css' },
     callback = function()
         vim.opt_local.tabstop = 2
         vim.opt_local.shiftwidth = 2
@@ -137,7 +150,6 @@ vim.api.nvim_create_autocmd('FileType', {
 vim.api.nvim_create_autocmd("VimResized", {
 	command = "wincmd =",
 })
-
 
 -- restore cursor to file position in previous editing session
 vim.api.nvim_create_autocmd("BufReadPost", {
@@ -163,31 +175,104 @@ vim.api.nvim_create_autocmd("BufRead", {
 	end,
 })
 
--- #vim.pack.add plugins
+-- ── Installl plugins using vim.pack.add(*) ────────────────────────────────
+vim.pack.add({
+
+    -- #Colorscheme
+    { src = "https://github.com/folke/tokyonight.nvim" },
+
+    -- #Fexptr file explorer
+    { src = "https://github.com/dghuuloc/fexptr.nvim" },
+
+    -- #Machine Learning / Deep Learning
+    { src = "https://github.com/dghuuloc/mlbuddy.nvim" },
+
+    -- #Treesitter
+    {
+        src = "https://github.com/nvim-treesitter/nvim-treesitter",
+        version = "main",
+        build = ":TSUpdate"
+    },
+
+    -- #Fuzzy finder
+    { src = "https://github.com/ibhagwan/fzf-lua" },
+
+    -- #Editing helpers
+    { src = "https://github.com/nvim-mini/mini.nvim" },
+
+    -- #Git
+    { src = "https://github.com/lewis6991/gitsigns.nvim" },
+    { src = "https://github.com/tpope/vim-fugitive" },
+
+    -- #LSP + Completion
+    { src = "https://github.com/neovim/nvim-lspconfig" },
+    { src = "https://github.com/mason-org/mason.nvim" },
+    {
+      src     = "https://github.com/saghen/blink.cmp",
+      version = vim.version.range("1.*"),
+    },
+    { src = "https://github.com/L3MON4D3/LuaSnip" },
+    { src = "https://github.com/rafamadriz/friendly-snippets" },
+
+    -- #Formatting + Linting
+    { src = "https://github.com/stevearc/conform.nvim" },
+    { src = "https://github.com/mfussenegger/nvim-lint" },
+
+    -- #Java (jdtls)
+    { src = "https://github.com/mfussenegger/nvim-jdtls" },
+
+    -- #DAP (debugging)
+    { src = "https://github.com/mfussenegger/nvim-dap" },
+    { src = "https://github.com/mfussenegger/nvim-dap-python" },
+    { src = "https://github.com/rcarriga/nvim-dap-ui" },
+    { src = "https://github.com/nvim-neotest/nvim-nio" },
+    { src = "https://github.com/theHamsta/nvim-dap-virtual-text" },
+
+    -- # Markdown/Asciidoc
+    { src = "https://github.com/OXY2DEV/markview.nvim" },
+    { src = "https://github.com/dghuuloc/asciidoc.nvim" },
+
+    -- #AI
+    -- { src = "https://github.com/zbirenbaum/copilot.lua" },
+    -- { src = "https://github.com/CopilotC-Nvim/CopilotChat.nvim" },
+    -- {
+    --     src   = "https://github.com/olimorris/codecompanion.nvim",
+    --     deps  = {
+    --         { src = "https://github.com/nvim-lua/plenary.nvim" },
+    --         { src = "https://github.com/stevearc/dressing.nvim" },
+    --         {
+    --             src  = "https://github.com/MeanderingProgrammer/render-markdown.nvim",
+    --             ft   = { "markdown","codecompanion" },
+    --         },
+    --     },
+    -- },
+
+    -- #Misc
+    -- { src = "https://github.com/nvim-lua/plenary.nvim" },
+    -- { src = "https://github.com/folke/todo-comments.nvim" },
+
+})
+
+-- ── Plugin's configs ────────────────────────────────────────
 require("me.fzf")
 require("me.mini")
 require("me.gitsigns")
 require("me.lsp")
+require("me.dap")
+-- require("me.conform")
+-- require("me.lint")
 
--- colorscheme
-vim.pack.add({
-    { src = "https://github.com/folke/tokyonight.nvim" },
-})
+-- ── Tokyonight Colorscheme ──────────────────────────────────────────────────────
 local ok, tokyonight = pcall(require, "tokyonight")
 if ok then
     tokyonight.setup({ style = "storm" })
      pcall(vim.cmd.colorscheme, "tokyonight")
-else
-    vim.cmd.colorscheme("catppuccin")
-end
 -- vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
 -- vim.api.nvim_set_hl(0, "NormalNC", { bg = "none" })
 -- vim.api.nvim_set_hl(0, "EndOfBuffer", { bg = "none" })
-
--- fexptr.nvim
-vim.pack.add({
-    { src = "https://github.com/dghuuloc/fexptr.nvim" },
-})
+else
+    vim.cmd.colorscheme("catppuccin")
+end
 
 -- ── fexptr file explorer ──────────────────────────────────────────────────────
 local ok_fex, fex = pcall(require, "fexptr")
@@ -207,16 +292,125 @@ if ok_fex then
         { noremap=true, silent=true, desc="toggle file explorer" })
 end
 
--- nvim-treesitter
+-- ── nvim-treesitter ──────────────────────────────────────────────────────
 vim.pack.add({
-    {
-        src = "https://github.com/nvim-treesitter/nvim-treesitter",
-        version = "main",
-        build = ":TSUpdate"
-    }
 })
 
--- #floating terminal
+local ok, nts = pcall(require, "nvim-treesitter")
+if not ok then
+    return
+end
+
+nts.setup({
+    install_dir = vim.fn.stdpath("data") .. "/site",
+})
+
+local parsers = {
+    "vim", "vimdoc", "markdown", "markdown_inline",
+    "java", "python", "typescript", "javascript", "rust", "lua", "sql",
+    "tsx", "html", "css", "query", "dockerfile",
+    "json", "yaml", "toml", "bash"
+}
+
+vim.api.nvim_create_user_command("TSInstallMyParsers", function()
+    nts.install(parsers)
+end, { desc = "Install my Treesitter parsers" })
+
+local group = vim.api.nvim_create_augroup("MyTreeSitter", { clear = true })
+
+vim.api.nvim_create_autocmd("FileType", {
+    group = group,
+    pattern = "*",
+
+    callback = function(ev)
+        local ft = vim.bo[ev.buf].filetype
+        local lang = vim.treesitter.language.get_lang(ft)
+        if not lang then
+            return
+        end
+
+        local ok_lang = vim.treesitter.language.add(lang)
+        if not ok_lang then
+            return
+        end
+
+        if vim.treesitter.query.get(lang, "highlights") then
+            pcall(vim.treesitter.start, ev.buf, lang)
+        end
+
+        -- if vim.treesitter.query.get(lang, "folds") then
+        --   vim.wo[0].foldmethod = "expr"
+        --   vim.wo[0].foldexpr = "v:lua.vim.treesitter.foldexpr()"
+        -- end
+
+        if vim.treesitter.query.get(lang, "indents") then
+            vim.bo[ev.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+        end
+    end,
+
+})
+-- ── mlbuddy ────────────────────────────────────────────────────────────────
+local ok_mlb, mlbuddy = pcall(require, "mlbuddy")
+if ok_mlb then
+  mlbuddy.setup({
+    debugger = {
+      enabled       = true,
+      auto_inspect  = false,
+      virt_text     = false,
+      default_model = "full"
+    },
+    dataloader = {
+      enabled       = true,
+      auto_inspect  = false,
+    },
+  })
+
+  require("me.ml").apply("code")
+
+  vim.keymap.set("n", "<leader>mc", function()
+    require("me.ml").apply("code")
+  end, { desc = "Normal Python DAP mode" })
+
+  vim.keymap.set("n", "<leader>mm", function()
+    require("me.ml").apply("model")
+  end, { desc = "ML model mode" })
+
+  vim.keymap.set("n", "<leader>mt", function()
+    require("me.ml").toggle()
+  end, { desc = "Toggle ML debug mode" })
+
+end
+
+
+-- ── markdown/asciidoc ──────────────────────────────────────────────────────
+local ok_mkv, mkv = pcall(require, "markview")
+if ok_mkv then
+    mkv.setup({
+        preview = {
+        enable = true,
+        filetypes = { "markdown", "md", "rmd", "quarto" },
+        hybrid_modes = { "n" },
+  },
+    })
+end
+
+-- for asciidoc
+local ok_asciidoc, asciidoc = pcall(require, "asciidoc")
+if ok_asciidoc then
+    asciidoc.setup({
+        preview = {
+            mode = "browser",
+            term_renderer = "w3m",
+            term_split = "vsplit",
+            term_width = 80,
+            port = 8765,
+            refresh = 2,
+            auto_open = true,
+        }
+    })
+end
+
+-- ── floating terminal ──────────────────────────────────────────────────────
 vim.api.nvim_create_autocmd("TermClose", {
 	callback = function()
 		if vim.v.event.status == 0 then
@@ -276,7 +470,7 @@ local function FloatingTerminal()
 		end
 	end
 	if not has_terminal then
-		vim.fn.termopen(os.getenv("SHELL"))
+        vim.fn.jobstart(os.getenv("SHELL") or "sh", { term = true })
 	end
 
 	terminal_state.is_open = true
