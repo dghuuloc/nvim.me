@@ -259,6 +259,7 @@ require("me.mini")
 require("me.gitsigns")
 require("me.lsp")
 require("me.dap")
+require("me.preview")
 -- require("me.conform")
 -- require("me.lint")
 
@@ -379,35 +380,6 @@ if ok_mlb then
     require("me.ml").toggle()
   end, { desc = "Toggle ML debug mode" })
 
-end
-
-
--- ── markdown/asciidoc ──────────────────────────────────────────────────────
-local ok_mkv, mkv = pcall(require, "markview")
-if ok_mkv then
-    mkv.setup({
-        preview = {
-        enable = true,
-        filetypes = { "markdown", "md", "rmd", "quarto" },
-        hybrid_modes = { "n" },
-  },
-    })
-end
-
--- for asciidoc
-local ok_asciidoc, asciidoc = pcall(require, "asciidoc")
-if ok_asciidoc then
-    asciidoc.setup({
-        preview = {
-            mode = "browser",
-            term_renderer = "w3m",
-            term_split = "vsplit",
-            term_width = 80,
-            port = 8765,
-            refresh = 2,
-            auto_open = true,
-        }
-    })
 end
 
 -- ── floating terminal ──────────────────────────────────────────────────────
