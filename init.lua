@@ -116,7 +116,7 @@ vim.keymap.set("t", "<Esc>", "<C-\\><C-N>")
 vim.pack.add({
 
     -- #Colorscheme
-    { src = "https://github.com/folke/tokyonight.nvim" },
+    -- { src = "https://github.com/folke/tokyonight.nvim" },
 
     -- #Fexptr file explorer
     { src = "https://github.com/dghuuloc/fexptr.nvim" },
@@ -125,11 +125,11 @@ vim.pack.add({
     { src = "https://github.com/dghuuloc/mlbuddy.nvim" },
 
     -- #Treesitter
-    {
-        src = "https://github.com/nvim-treesitter/nvim-treesitter",
-        version = "main",
-        build = ":TSUpdate"
-    },
+    -- {
+    --     src = "https://github.com/nvim-treesitter/nvim-treesitter",
+    --     version = "main",
+    --     build = ":TSUpdate"
+    -- },
 
     -- #Fuzzy finder
     { src = "https://github.com/ibhagwan/fzf-lua" },
@@ -152,8 +152,8 @@ vim.pack.add({
     { src = "https://github.com/rafamadriz/friendly-snippets" },
 
     -- #Formatting + Linting
-    { src = "https://github.com/stevearc/conform.nvim" },
-    { src = "https://github.com/mfussenegger/nvim-lint" },
+    -- { src = "https://github.com/stevearc/conform.nvim" },
+    -- { src = "https://github.com/mfussenegger/nvim-lint" },
 
     -- #Java (jdtls)
     { src = "https://github.com/mfussenegger/nvim-jdtls" },
@@ -200,16 +200,16 @@ require("me.dap")
 require("me.preview")
 
 -- ── Tokyonight Colorscheme ──────────────────────────────────────────────────────
-local ok, tokyonight = pcall(require, "tokyonight")
-if ok then
-    tokyonight.setup({ style = "storm" })
-     pcall(vim.cmd.colorscheme, "tokyonight")
--- vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
--- vim.api.nvim_set_hl(0, "NormalNC", { bg = "none" })
--- vim.api.nvim_set_hl(0, "EndOfBuffer", { bg = "none" })
-else
-    vim.cmd.colorscheme("catppuccin")
-end
+-- local ok, tokyonight = pcall(require, "tokyonight")
+-- if ok then
+--     tokyonight.setup({ style = "storm" })
+--      pcall(vim.cmd.colorscheme, "tokyonight")
+-- -- vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
+-- -- vim.api.nvim_set_hl(0, "NormalNC", { bg = "none" })
+-- -- vim.api.nvim_set_hl(0, "EndOfBuffer", { bg = "none" })
+-- else
+--     vim.cmd.colorscheme("catppuccin")
+-- end
 
 -- ── fexptr file explorer ──────────────────────────────────────────────────────
 local ok_fex, fex = pcall(require, "fexptr")
@@ -230,62 +230,59 @@ if ok_fex then
 end
 
 -- ── nvim-treesitter ──────────────────────────────────────────────────────
-vim.pack.add({
-})
+-- local ok, nts = pcall(require, "nvim-treesitter")
+-- if not ok then
+--     return
+-- end
 
-local ok, nts = pcall(require, "nvim-treesitter")
-if not ok then
-    return
-end
+-- nts.setup({
+--     install_dir = vim.fn.stdpath("data") .. "/site",
+-- })
 
-nts.setup({
-    install_dir = vim.fn.stdpath("data") .. "/site",
-})
+-- local parsers = {
+--     "vim", "vimdoc", "markdown", "markdown_inline",
+--     "java", "python", "typescript", "javascript", "rust", "lua", "sql",
+--     "tsx", "html", "css", "query", "dockerfile",
+--     "json", "yaml", "toml", "bash"
+-- }
 
-local parsers = {
-    "vim", "vimdoc", "markdown", "markdown_inline",
-    "java", "python", "typescript", "javascript", "rust", "lua", "sql",
-    "tsx", "html", "css", "query", "dockerfile",
-    "json", "yaml", "toml", "bash"
-}
+-- vim.api.nvim_create_user_command("TSInstallMyParsers", function()
+--     nts.install(parsers)
+-- end, { desc = "Install my Treesitter parsers" })
 
-vim.api.nvim_create_user_command("TSInstallMyParsers", function()
-    nts.install(parsers)
-end, { desc = "Install my Treesitter parsers" })
+-- local group = vim.api.nvim_create_augroup("MyTreeSitter", { clear = true })
 
-local group = vim.api.nvim_create_augroup("MyTreeSitter", { clear = true })
+-- vim.api.nvim_create_autocmd("FileType", {
+--     group = group,
+--     pattern = "*",
 
-vim.api.nvim_create_autocmd("FileType", {
-    group = group,
-    pattern = "*",
+--     callback = function(ev)
+--         local ft = vim.bo[ev.buf].filetype
+--         local lang = vim.treesitter.language.get_lang(ft)
+--         if not lang then
+--             return
+--         end
 
-    callback = function(ev)
-        local ft = vim.bo[ev.buf].filetype
-        local lang = vim.treesitter.language.get_lang(ft)
-        if not lang then
-            return
-        end
+--         local ok_lang = vim.treesitter.language.add(lang)
+--         if not ok_lang then
+--             return
+--         end
 
-        local ok_lang = vim.treesitter.language.add(lang)
-        if not ok_lang then
-            return
-        end
+--         if vim.treesitter.query.get(lang, "highlights") then
+--             pcall(vim.treesitter.start, ev.buf, lang)
+--         end
 
-        if vim.treesitter.query.get(lang, "highlights") then
-            pcall(vim.treesitter.start, ev.buf, lang)
-        end
+--         -- if vim.treesitter.query.get(lang, "folds") then
+--         --   vim.wo[0].foldmethod = "expr"
+--         --   vim.wo[0].foldexpr = "v:lua.vim.treesitter.foldexpr()"
+--         -- end
 
-        -- if vim.treesitter.query.get(lang, "folds") then
-        --   vim.wo[0].foldmethod = "expr"
-        --   vim.wo[0].foldexpr = "v:lua.vim.treesitter.foldexpr()"
-        -- end
+--         if vim.treesitter.query.get(lang, "indents") then
+--             vim.bo[ev.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+--         end
+--     end,
 
-        if vim.treesitter.query.get(lang, "indents") then
-            vim.bo[ev.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
-        end
-    end,
-
-})
+-- })
 -- ── mlbuddy ────────────────────────────────────────────────────────────────
 local ok_mlb, mlbuddy = pcall(require, "mlbuddy")
 if ok_mlb then
