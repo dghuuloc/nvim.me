@@ -1,4 +1,14 @@
-require("mason").setup({})
+-- ============================================================================
+-- lua/me/lsp.lua
+-- MasonInstall: basedpyright, clangd, codelldb, debugpy, java-debug-adapter
+--               java-test, jdtls, js-debug-adapter, lua-language-server
+--               pyright, ruff, typescript-language-server
+-- ============================================================================
+
+local ok_ms, ms =  pcall(require, "mason")
+if ok_ms then
+  ms.setup({})
+end
 
 local diagnostic_signs = {
 	Error = " ",

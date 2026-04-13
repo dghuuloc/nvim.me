@@ -21,24 +21,6 @@
 --                         (best fallback for AsciiDoc on Windows)
 -- =============================================================================
 -- Markview
--- local ok_mkv, mkv = pcall(require, "markview")
--- if ok_mkv then
---     mkv.setup({
---         preview = {
---             enable = true,
---             hybrid_modes = { "n" },
---             filetypes = { "markdown", "md", "rmd", "quarto" },
---             condition = function(buf)
---                 local ft = vim.bo[buf].filetype
---                 if ft == "asciidoc" or ft == "asciidoctor" then
---                     return false
---                 end
---                 return nil
---             end,
---         },
---     })
--- end
-
 local ok_mkv, mkv = pcall(require, "markview")
 if ok_mkv then
     mkv.setup({
@@ -55,6 +37,8 @@ local ok_asciidoc, asciidoc = pcall(require, "asciidoc")
 if ok_asciidoc then
     asciidoc.setup({
         preview = {
+            enable = true,
+            live_reload = true,
             mode = "browser",
             term_renderer = "w3m",
             term_split = "vsplit",

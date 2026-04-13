@@ -75,13 +75,7 @@ rm -r -fo $env:LOCALAPPDATA/nvim/.git
 ---
 ### Install plugins
 ```
-git clone https://github.com/mfussenegger/nvim-jdtls.git "$env:LOCALAPPDATA\nvim-data\site\pack\plugins\start\nvim-jdtls"
-git clone https://github.com/mfussenegger/nvim-dap.git "$env:LOCALAPPDATA\nvim-data\site\pack\plugins\start\nvim-dap"
-git clone https://github.com/mfussenegger/nvim-dap-python.git "$env:LOCALAPPDATA\nvim-data\site\pack\plugins\start\nvim-dap-python"
-git clone https://github.com/nvim-neotest/nvim-nio.git "$env:LOCALAPPDATA\nvim-data\site\pack\plugins\start\nvim-nio"
-git clone https://github.com/rcarriga/nvim-dap-ui.git "$env:LOCALAPPDATA\nvim-data\site\pack\plugins\start\nvim-dap-ui"
-git clone https://github.com/williamboman/mason.nvim.git "$env:LOCALAPPDATA\nvim-data\site\pack\plugins\start\mason.nvim"
-git clone https://github.com/nvim-tree/nvim-tree.lua.git "$env:LOCALAPPDATA\nvim-data\site\pack\plugins\start\nvim-tree.lua"
+git clone https://github.com/dghuuloc/fexptr.nvim.git "$env:LOCALAPPDATA\nvim-data\site\pack\plugins\start\fexptr.nvim"
 ```
 
 ### Install Recipes
@@ -97,25 +91,12 @@ git clone --recursive https://github.com/dghuuloc/nvim.me.git $env:LOCALAPPDATA/
 rm -r -fo $env:LOCALAPPDATA/nvim/.git
 ```
 ---
-### __Install Java Debug Server and Test Runner for Java (optional)__
-- __Insatall Java Debug Server on Windows__
-```shell
-git clone --recursive https://github.com/microsoft/java-debug.git $env:LOCALAPPDATA/nvim-data
-```
 
-- __Insatall Test Runner for Java on Windows__
-```shell
-git clone --recursive https://github.com/microsoft/vscode-java-test.git $env:LOCALAPPDATA/nvim-data
-```
-
-### __Install Python Debug Server via `pip` (optional)__
-```shell
-python -m pip install debugpy
-```
-
-## Install languager server extension
-- :lua require('mason').setup()
+## Install languager server extension via mason
 - :MasonInstall jdtls java-debug-adapter js-debug-adapter java-test
 
 
-## [Vim Cheat Sheet](https://vim.rtorr.com/)
+## References
+* [Vim Cheat Sheet](https://vim.rtorr.com/)
+* [Whats new in neovim 0.12](https://dotfiles.substack.com/p/whats-new-in-neovim-012)
+
