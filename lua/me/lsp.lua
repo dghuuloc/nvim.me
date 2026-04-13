@@ -187,77 +187,9 @@ vim.lsp.config["*"] = {
 	capabilities = require("blink.cmp").get_lsp_capabilities(),
 }
 
--- vim.lsp.config("lua_ls", {
--- 	settings = {
--- 		Lua = {
---             runtime = { version = "LuaJIT" },
--- 			diagnostics = { globals = { "vim", "require" } },
---             workspace = { libary = vim.api.nvim_get_runtime_file("", true) },
--- 			telemetry = { enable = false },
--- 		},
--- 	},
--- })
-
-vim.lsp.config("pyright", {})
-vim.lsp.config("ts_ls", {})
-
 vim.lsp.enable({
 	"lua_ls",
 	"pyright",
 	"ts_ls",
     "jsonls"
 })
-
-
--- Shell lsp setup
--- local function setup_shell_lsp()
---     vim.lsp.start({
---         name = 'bashls',
---         cmd = { 'bash-language-server', 'start' },
---         filetypes = { 'sh', 'bash', 'zsh' },
---         root_dir = find_root({ '.git', 'Makefile' }),
---         settings = {
---             bashIde = {
---                 globPattern = '*@(.sh|.inc|.bash|.command)'
---             }
---         }
---     })
--- end
---
--- Python lsp setup
--- local function setup_python_lsp()
---     vim.lsp.start({
---         name = 'pylsp',
---         cmd = { 'pylsp' },
---         filetypes = { 'python' },
---         root_dir = find_root({ 'pyproject.toml', 'setup.py', 'setup.cfg', 'requirements.txt', '.git' }),
---         settings = {
---             pylsp = {
---                 plugins = {
---                     pycodestyle = {
---                         enabled = false
---                     },
---                     flake8 = {
---                         enabled = true
---                     },
---                     black = {
---                         enabled = true
---                     },
---                 }
---             }
---         }
---     })
--- end
---
--- Auto-start LSPs based on filetype
--- vim.api.nvim_create_autocmd('FileType', {
---     pattern = 'sh,bash,zsh',
---     callback = setup_shell_lsp,
---     desc = 'Start shell LSP'
--- })
-
--- vim.api.nvim_create_autocmd('FileType', {
---     pattern = 'python',
---     callback = setup_python_lsp,
---     desc = 'Start Python LSP'
--- })
