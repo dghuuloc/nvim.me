@@ -3,8 +3,11 @@ return {
     cmd = { "lua-language-server" },
     filetypes = { "lua" },
     root_markers = {
-        { ".luarc.json", ".luarc.jsonc", ".luacheckrc", ".stylua", "stylua.toml", "selene.toml", "selene.yml" },
-        ".git",
+      {
+          ".luarc.json", ".luarc.jsonc", ".luacheckrc",
+          ".stylua", "stylua.toml", "selene.toml", "selene.yml"
+      },
+      ".git",
     },
     settings = {
         Lua = {
@@ -20,7 +23,6 @@ return {
             },
             workspace = {
                 library = { vim.env.VIMRUNTIME },
-                -- library = vim.api.nvim_get_runtime_file("", true)
                 checkThirdParty = false,
             },
        },
