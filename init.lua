@@ -284,33 +284,33 @@ end
 
 -- })
 -- ── mlbuddy ────────────────────────────────────────────────────────────────
-local ok_mlb, mlbuddy = pcall(require, "mlbuddy")
-if ok_mlb then
-  mlbuddy.setup({
-    debugger = {
-      enabled       = true,
-      auto_inspect  = false,
-      virt_text     = false,
-      default_model = "full"
-    },
-    dataloader = {
-      enabled       = true,
-      auto_inspect  = false,
-    },
-  })
+-- local ok_mlb, mlbuddy = pcall(require, "mlbuddy")
+-- if ok_mlb then
+--   mlbuddy.setup({
+--     debugger = {
+--       enabled       = true,
+--       auto_inspect  = false,
+--       virt_text     = false,
+--       default_model = "full"
+--     },
+--     dataloader = {
+--       enabled       = true,
+--       auto_inspect  = false,
+--     },
+--   })
 
-  require("me.ml").apply("code")
+--   require("me.ml").apply("code")
 
-  vim.keymap.set("n", "<leader>mc", function()
-    require("me.ml").apply("code")
-  end, { desc = "Normal Python DAP mode" })
+--   vim.keymap.set("n", "<leader>mc", function()
+--     require("me.ml").apply("code")
+--   end, { desc = "Normal Python DAP mode" })
 
-  vim.keymap.set("n", "<leader>mm", function()
-    require("me.ml").apply("model")
-  end, { desc = "ML model mode" })
+--   vim.keymap.set("n", "<leader>mm", function()
+--     require("me.ml").apply("model")
+--   end, { desc = "ML model mode" })
 
-  vim.keymap.set("n", "<leader>mt", function()
-    require("me.ml").toggle()
-  end, { desc = "Toggle ML debug mode" })
+--   vim.keymap.set("n", "<leader>mt", function()
+--     require("me.ml").toggle()
+--   end, { desc = "Toggle ML debug mode" })
 
-end
+-- end
