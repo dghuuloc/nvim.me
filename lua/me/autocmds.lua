@@ -10,29 +10,29 @@ vim.api.nvim_create_autocmd("FileType", {
 
 -- Highlight yanked text
 vim.api.nvim_create_autocmd('TextYankPost', {
-    group = vim.api.nvim_create_augroup("highlight_yank", { clear = true }),
+  group = vim.api.nvim_create_augroup("highlight_yank", { clear = true }),
     pattern = "*",
     desc = "highlight selection on yank",
-    callback = function()
-        vim.highlight.on_yank({ timeout = 200, visual = true })
-    end,
+  callback = function()
+    vim.highlight.on_yank({ timeout = 200, visual = true })
+  end,
 })
 
 -- Set filetype-specific settings
 vim.api.nvim_create_autocmd('FileType', {
-    pattern = { 'java', 'python' },
-    callback = function()
-        vim.opt_local.tabstop = 4
-        vim.opt_local.shiftwidth = 4
-    end,
+  pattern = { 'java', 'python' },
+  callback = function()
+    vim.opt_local.tabstop = 4
+    vim.opt_local.shiftwidth = 4
+  end,
 })
 
 vim.api.nvim_create_autocmd('FileType', {
-    pattern = { 'lua', 'json', 'html', 'css' },
-    callback = function()
-        vim.opt_local.tabstop = 2
-        vim.opt_local.shiftwidth = 2
-    end,
+  pattern = { 'lua', 'json', 'html', 'css' },
+  callback = function()
+    vim.opt_local.tabstop = 2
+    vim.opt_local.shiftwidth = 2
+  end,
 })
 
 -- auto resize splits when the terminal's window is resized
