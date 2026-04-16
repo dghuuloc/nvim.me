@@ -309,10 +309,35 @@ end
 
 -- ── Start jdtls ───────────────────────────────────────────────────────────────
 ---@diagnostic disable-next-line: undefined-field
+-- ── Capabilities (must be passed explicitly — vim.lsp.config["*"] does NOT
+-- reach jdtls because start_or_attach uses vim.lsp.start(), not vim.lsp.enable())
+local capabilities = vim.tbl_deep_extend("force",
+    vim.lsp.protocol.make_client_capabilities(),
+    {
+        workspace = {
+            didChangeWatchedFiles = { dynamicRegistration = true },
+        },
+        textDocument = {
+            completion = {
+                completionItem = {
+                    snippetSupport      = true,   -- required: jdtls returns full JDK completions
+                    resolveSupport      = {
+                        properties = { "documentation", "detail", "additionalTextEdits" },
+                    },
+                    documentationFormat = { "markdown", "plaintext" },
+                    deprecatedSupport   = true,
+                    preselectSupport    = true,
+                },
+            },
+            foldingRange = { dynamicRegistration = false, lineFoldingOnly = true },
+        },
+    })
+
 jdtls.start_or_attach({
     cmd       = cmd,
     root_dir  = root_dir,
     on_attach = on_attach,
+    capabilities = capabilities,   -- this is what makes String/int/List/Map appear
     init_options = {
         bundles                    = bundles,
         extendedClientCapabilities = extCaps,

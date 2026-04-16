@@ -58,8 +58,6 @@ vim.opt.smartcase = true                    -- case sensitive if uppercase in st
 vim.opt.hlsearch = true                     -- highlight search matches
 vim.opt.incsearch = true                    -- show matches as you type
 
-vim.opt.autocomplete = true
-
 vim.opt.splitbelow = true
 vim.opt.splitright = true
 
