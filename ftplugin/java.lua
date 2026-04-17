@@ -205,7 +205,7 @@ local function on_attach(client, bufnr)
           local ok2 = code == 0
           vim.g.java_build_status = ok2 and " " or " FAILED"
           vim.notify(
-            (notify_title or "Build") .. " " .. (ok2 and "✔ succeeded" or "✗ FAILED"),
+            (notify_title or "Build") .. " " .. (ok2 and "✔  succeeded" or "✗ FAILED"),
             ok2 and vim.log.levels.INFO or vim.log.levels.ERROR,
             { title = "Java" }
           )
@@ -451,3 +451,84 @@ jdtls.start_or_attach({
     },
     settings = (vim.lsp.config["jdtls"] or {}).settings or {},
 })
+
+-- ── Start Java Dap ───────────────────────────────────────────────────────────────
+local ok, dap = pcall(require, "dap"); if not ok then return end
+
+-- Register Java adapter (handled by nvim-jdtls, but ensure it exists)
+if not dap.adapters.java then
+  dap.adapters.java = function(cb)
+    require("jdtls").execute_command({
+      command = "vscode.java.startDebugSession",
+    }, function(err, port)
+      assert(not err, vim.inspect(err))
+      cb({ type="server", host="127.0.0.1", port=port })
+    end)
+  end
+end
+
+dap.configurations.java = {
+  -- ── Attach to running JVM ───────────────────────────────────────────
+  {
+    name     = " Attach (5005)",
+    type     = "java",
+    request  = "attach",
+    hostName = "localhost",
+    port     = 5005,
+  },
+  {
+    name     = " Attach (custom port)",
+    type     = "java",
+    request  = "attach",
+    hostName = "localhost",
+    port     = function()
+      return tonumber(vim.fn.input({ prompt = "Debug port: ", default = "5005" })) or 5005
+    end,
+  },
+  -- ── Spring Boot ─────────────────────────────────────────────────────
+  {
+    name     = "🍃 Spring Boot: attach (5005)",
+    type     = "java",
+    request  = "attach",
+    hostName = "localhost",
+    port     = 5005,
+    projectName = function()
+      return vim.fn.fnamemodify(vim.fn.getcwd(), ":t")
+    end,
+  },
+  {
+    name     = "🍃 Spring Boot: attach (Docker)",
+    type     = "java",
+    request  = "attach",
+    hostName = function()
+      return vim.fn.input({ prompt = "Docker host: ", default = "localhost" })
+    end,
+    port     = function()
+      return tonumber(vim.fn.input({ prompt = "Port: ", default = "5005" })) or 5005
+    end,
+  },
+  -- ── Remote ──────────────────────────────────────────────────────────
+  {
+    name     = "☁  Remote (custom host:port)",
+    type     = "java",
+    request  = "attach",
+    hostName = function()
+      return vim.fn.input({ prompt = "Remote host: ", default = "localhost"})
+    end,
+    port     = function()
+      return tonumber(vim.fn.input({ prompt = "Remote port: ", default = "5005" })) or 5005
+    end,
+  },
+  -- ── Kubernetes port-forward ──────────────────────────────────────────
+  {
+    name     = "⎈  Kubernetes (port-forward 5005)",
+    type     = "java",
+    request  = "attach",
+    hostName = "127.0.0.1",
+    port     = 5005,
+    -- Before using this, run:
+    -- kubectl port-forward pod/<pod-name> 5005:5005
+  },
+}
+
+

@@ -4,6 +4,8 @@
 --               java-test, jdtls, js-debug-adapter, lua-language-server
 --               pyright, ruff, typescript-language-server
 -- ============================================================================
+local M = {}
+
 local ok_ms, ms =  pcall(require, "mason")
 -- Initialize Mason
 if ok_ms then
@@ -51,30 +53,53 @@ end)
 -- jdtls only returns String/List/Map/int/... completions when the client
 -- declares snippetSupport=true and resolveSupport.
 -- lsp.config["*"] applies these capabilities to EVERY server automatically.
-vim.lsp.config["*"] = {
-  capabilities = vim.tbl_deep_extend("force",
+
+
+-- ── Capability builder ───────────────────────────────────────────────────────
+function M.mk_config(extra)
+  -- Request snippet support, folding, watched files
+  local caps = vim.tbl_deep_extend("force",
     vim.lsp.protocol.make_client_capabilities(),
     {
-      workspace = {
-        didChangeWatchedFiles = { dynamicRegistration = true },
-      },
+      workspace    = { didChangeWatchedFiles = { dynamicRegistration=true } },
       textDocument = {
-        completion = {
-          completionItem = {
-            snippetSupport  = true,   -- required for jdtls to return full items
-            resolveSupport  = {
-              properties = { "documentation", "detail", "additionalTextEdits" },
-            },
-            documentationFormat = { "markdown", "plaintext" },
-            deprecatedSupport   = true,
-            preselectSupport    = true,
-          },
-        },
-        -- Needed for jdtls to register folding providers
-        foldingRange = { dynamicRegistration = false, lineFoldingOnly = true },
+        completion = { completionItem = {
+          snippetSupport  = true,
+          resolveSupport  = { properties={"documentation","detail","additionalTextEdits"} },
+        }},
+        foldingRange = { dynamicRegistration=false, lineFoldingOnly=true },
       },
-    }),
-}
+    })
+  return vim.tbl_deep_extend("force",
+    { handlers={}, capabilities=caps, init_options=vim.empty_dict(), settings=vim.empty_dict() },
+    extra or {})
+end
+
+
+-- vim.lsp.config["*"] = {
+--   capabilities = vim.tbl_deep_extend("force",
+--     vim.lsp.protocol.make_client_capabilities(),
+--     {
+--       workspace = {
+--         didChangeWatchedFiles = { dynamicRegistration = true },
+--       },
+--       textDocument = {
+--         completion = {
+--           completionItem = {
+--             snippetSupport  = true,   -- required for jdtls to return full items
+--             resolveSupport  = {
+--               properties = { "documentation", "detail", "additionalTextEdits" },
+--             },
+--             documentationFormat = { "markdown", "plaintext" },
+--             deprecatedSupport   = true,
+--             preselectSupport    = true,
+--           },
+--         },
+--         -- Needed for jdtls to register folding providers
+--         foldingRange = { dynamicRegistration = false, lineFoldingOnly = true },
+--       },
+--     }),
+-- }
 
 -- ── Diagnostic configuration ─────────────────────────────────────────────────
 vim.diagnostic.config({
@@ -231,6 +256,7 @@ vim.api.nvim_create_autocmd("LspDetach", {
 -- ── Enable servers ────────────────────────────────────────────────────────────
 -- lsp/*.lua files auto-loaded by Neovim 0.11+ from config directory.
 -- Capabilities from lsp.config["*"] are merged automatically.
+vim.lsp.config["*"] = M.mk_config()
 vim.lsp.enable({
 	"lua_ls",
 	"pyright",
@@ -310,3 +336,5 @@ vim.keymap.set({ "i","s" }, "<Esc>", function()
   if vim.snippet.active() then vim.snippet.stop() end
   return vim.keycode("<Esc>")
 end,{ expr = true, silent = true })
+
+return M
