@@ -35,7 +35,7 @@ vim.opt.iskeyword:append("-")               -- include - in words
 vim.opt.path:append("**")                   -- include subdirs in search
 vim.opt.selection = "inclusive"             -- include last char in selection
 vim.opt.encoding = "utf-8"                  -- set encoding
-vim.opt.syntax = 'off'                      -- nvim-treesitter replaces it
+vim.opt.syntax = 'on'                      -- nvim-treesitter replaces it
 vim.opt.clipboard = 'unnamedplus'           -- use system clipboard
 vim.opt.mouse = 'a'                         -- enable mouse support
 
@@ -71,7 +71,6 @@ vim.opt.whichwrap:append("<,>,[,],h,l")     -- Get h and l for moving over next 
 
 vim.opt.undofile  = true                    -- persist undo history across sessions
 vim.opt.undodir   = vim.fn.stdpath("data") .. "/undodir"
-vim.diagnostic.config({ virtual_text = true }) -- inline diagnostics
 
 vim.opt.guicursor = {
     'n-v-c:block',        -- normal, visual, command

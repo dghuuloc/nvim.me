@@ -262,11 +262,6 @@ local function on_attach(client, bufnr)
   set("n", "<leader>jrM", ca("refactor.move"),       opts) -- F6 equivalent
   set("n", "<leader>jrD", ca("refactor.safeDelete"),  opts) -- Alt+Delete
   set("n", "<leader>jrS", ca("refactor.rewrite"),     opts) -- change signature
-  set("n", "<leader>jri", ca("source.organizeImports"),opts)
-
-  -- Rename (F2 / crn)
-  set("n","<F2>",function() return ":IncRename "..vim.fn.expand("<cword>") end,
-    vim.tbl_extend("force",opts,{expr=true,desc="rename (F2)"}))
 
   -- ── Code generation  (<leader>jc…) ────────────────────────────────────
   local function gen(k)
@@ -310,9 +305,9 @@ local function on_attach(client, bufnr)
   set("n", "<leader>jbc", function()
     run_build("clean","Clean") end, opts)
   set("n","<leader>jbi",function()
-    run_build(build_tool == "maven" and "clean install -DskipTests" or "clean build -x test publishToMavenLocal","Install") end,opts)
+    run_build(build_tool() == "maven" and "clean install -DskipTests" or "clean build -x test publishToMavenLocal","Install") end,opts)
   set("n","<leader>jbr",function()
-    local goals = build_tool == "maven" and {
+    local goals = build_tool() == "maven" and {
       "clean package -DskipTests",
       "clean verify",
       "clean install -DskipTests",
