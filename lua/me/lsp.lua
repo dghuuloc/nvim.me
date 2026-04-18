@@ -259,7 +259,6 @@ vim.api.nvim_create_autocmd("LspDetach", {
 vim.lsp.config["*"] = M.mk_config()
 vim.lsp.enable({
 	"lua_ls",
-	"pyright",
 	"ts_ls",
   "jsonls",
   -- jdtls -> ftplugin/java.lua

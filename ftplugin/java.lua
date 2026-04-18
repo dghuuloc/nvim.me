@@ -113,21 +113,6 @@ end
 -- Find jdtls launcher jar
 local platform_cfg = P.is_win and "config_win" or (P.is_mac and "config_mac" or "config_linux")
 
--- ── Locate jdtls launcher jar ────────────────────────────────────────────────
--- for _,d in ipairs({ P.join(P.mason_dir,"packages","jdtls","plugins")}) do
---     local g = vim.fn.glob(d .. "/org.eclipse.equinox.launcher_*.jar")
---     if g ~= "" then
---         launcher = P.path(g)
---         local base = d:match("(.+)/plugins$")
---         vim.list_extend(cmd,{
---             "-jar",launcher,
---             "-configuration", P.join(base,platform_cfg)
---         })
---         vim.print(launcher)
---         break
---     end
--- end
-
 local local_launcher = vim.fn.glob(
   P.join(P.mason_dir,"packages","jdtls","plugins","org.eclipse.equinox.launcher_*.jar")
 )
@@ -137,17 +122,6 @@ if vim.uv.fs_stat(local_launcher) then
     "-configuration", P.join(P.mason_dir,"packages","jdtls",platform_cfg),
   })
 else
-    -- local sys = vim.fn.glob("/usr/share/java/jdtls/plugins/org.eclipse.equinox.launcher_*.jar")
-    -- if sys == "" then
-    --     sys = vim.fn.glob(P.home .. "/apps/jdtls/plugins/org.eclipse.equinox.launcher_*.jar")
-    -- end
-    -- vim.list_extend(cmd, {
-    --     "-Dosgi.checkConfiguration=true",
-    --     "-Dosgi.sharedConfiguration.area=/usr/share/java/jdtls/config_linux/",
-    --     "-Dosgi.sharedConfiguration.area.readOnly=true",
-    --     "-Dosgi.configuration.cascaded=true",
-    --     "-jar", sys,
-    -- })
   vim.notify("jdtls not found\n" ..
     "Or: :MasonInstall jdtls", vim.log.levels.WARN, { title = "Java LSP" }); return
 end
@@ -186,6 +160,19 @@ local function on_attach(client, bufnr)
   local opts = { silent = true, buffer = bufnr }
   local set  = vim.keymap.set
 
+  -- ── Notify: jdtls attached (fires before indexing finishes) ─────────────
+  vim.notify(
+    "jdtls attached — indexing " .. vim.fn.fnamemodify(root_dir, ":t") .. " …",
+    vim.log.levels.INFO,
+    { title = "Java LSP", timeout = 2000 })
+  vim.g.java_lsp_status = " Indexing…"
+  vim.cmd.redrawstatus()
+
+  -- ── Register DAP adapter via setup_dap (replaces old execute_command) ───
+  -- Must be called after jdtls attaches. hotcodereplace reloads changed
+  -- classes during a debug session without restarting the JVM.
+  require("jdtls").setup_dap({ hotcodereplace = "auto" })
+
   -- ── Build helpers ────────────────────────────────────────────────────────
   local function  save_if_dirty()
     if vim.bo[bufnr].modified then vim.cmd("w") end
@@ -214,38 +201,7 @@ local function on_attach(client, bufnr)
     })
   end
 
-  -- compile helper auto-save + build workspace)
-  -- local function compile(ms)
-  --     if vim.bo.modified then vim.cmd("w") end
-  --     client:request_sync("java/buildWorkspace", false, ms or 5000, bufnr )
-  -- end
-  -- local function wc(fn)
-  --     return function() compile(); fn() end
-  -- end
-  --
-  -- local function run_build(goals)
-  --     local tool = build_tool()
-  --     local exe = tool == "maven" and mvn_cmd() or gradle_cmd()
-  --     if not exe then
-  --         vim.notify("No build tool", vim.log.levels.WARN);
-  --         return
-  --     end
-  --     local args=vim.split(goals," "); table.insert(args,1,exe)
-  --     vim.g.java_build_status = " building..."
-  --     vim.fn.jobstart(args, {
-  --         cwd = root_dir,
-  --         on_exit=function(_,code)
-  --             vim.schedule(function()
-  --                 vim.g.java_build_status=code==0 and " " or " FAILED"
-  --                 vim.notify("Build "..(code==0 and "succeeded" or "FAILED"),
-  --                     code==0 and vim.log.levels.INFO or vim.log.levels.ERROR,
-  --                     {title="Java Build"})
-  --             end)
-  --         end
-  --     })
-  -- end
-
-  -- ── Imports & organisation ──────────────────────────────────────────────
+  -- ── Imports ──────────────────────────────────────────────
   set("n", "<A-o>", jdtls.organize_imports, opts)
 
   -- ── Refactoring  (<leader>jr…) ─────────────────────────────────────────
@@ -263,23 +219,30 @@ local function on_attach(client, bufnr)
   set("n", "<leader>jrD", ca("refactor.safeDelete"),  opts) -- Alt+Delete
   set("n", "<leader>jrS", ca("refactor.rewrite"),     opts) -- change signature
 
+  -- Rename — native vim.ui.input (inc-rename.nvim is not installed)
+  set("n", "<F2>", function()
+    local old = vim.fn.expand("<cword>")
+    vim.ui.input({ prompt = "Rename: ", default = old }, function(new)
+      if new and new ~= "" and new ~= old then
+        vim.lsp.buf.rename(new)
+      end
+    end)
+  end, vim.tbl_extend("force", opts, { desc = "rename symbol (F2)" }))
+
   -- ── Code generation  (<leader>jc…) ────────────────────────────────────
-  local function gen(k)
+  local function gen(kind)
       return function()
-          local ctx = { only = { k } }
+          local ctx = { only = { kind } }
           ---@cast ctx any
-          vim.lsp.buf.code_action({
-              context = ctx,
-              apply = true,
-          })
+          vim.lsp.buf.code_action({ context = ctx, apply = true })
       end
   end
-  set("n", "<leader>jco", gen("source.generate.toStringMethod"), opts)
-  set("n", "<leader>jce", gen("source.generate.hashCodeEqualsMethod"), opts)
-  set("n", "<leader>jcc", gen("source.generate.constructor"), opts)
-  set("n", "<leader>jcd", gen("source.generate.delegateMethods"), opts)
-  set("n", "<leader>jca", gen("source.generate.accessors"), opts)
-  set("n", "<leader>jcg", function() jdtls.generate() end, opts)
+  set("n", "<leader>jco", gen("source.generate.toStringMethod"),        opts)
+  set("n", "<leader>jce", gen("source.generate.hashCodeEqualsMethod"),  opts)
+  set("n", "<leader>jcc", gen("source.generate.constructor"),           opts)
+  set("n", "<leader>jcd", gen("source.generate.delegateMethods"),       opts)
+  set("n", "<leader>jca", gen("source.generate.accessors"),             opts)
+  set("n", "<leader>jcg", function() jdtls.generate() end,              opts)
 
   -- ── Tests  (<leader>jt…) ──────────────────────────────────────────────
   local conf = {
@@ -339,22 +302,55 @@ local function on_attach(client, bufnr)
     save_if_dirty()
     local jvm = "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=*:5005"
     run_build(
-      build_tool() == "maven" and ("spring-boot:run -Dspring-boot.run.jvmArguments=" .. vim.fn.shellescape(jvm))
-              or  "bootRun --debug-jvm",
+      build_tool() == "maven"
+        and ("spring-boot:run -Dspring-boot.run.jvmArguments=" .. vim.fn.shellescape(jvm))
+        or  "bootRun --debug-jvm",
       "Spring Boot (debug)")
-    vim.defer_fn(function()
-      require("dap").run({
-        type = "java", name = "Attach Spring Boot",
-        request = "attach", hostName = "localhost", port = 5005,
-      })
-    end, 2500)
-  end, opts)
 
-  -- set("n", "<leader>jsm", function()
-  --   require("telescope.builtin").live_grep({
-  --     prompt_title = "Request Mappings",
-  --     search = "@(GetMapping|PostMapping|PutMapping|DeleteMapping|RequestMapping)",
-  --     use_regex = true, type_filter = "java" }) end, opts)
+    vim.notify(
+      "Waiting for JVM on :5005 …\nSet breakpoints now, then press <F5> to continue.",
+      vim.log.levels.INFO, { title = "Spring Boot", timeout = 10000 })
+
+    local attempts = 0
+    local function try_attach()
+      attempts = attempts + 1
+      local tcp = vim.uv.new_tcp()
+      if not tcp then
+          vim.notify("Failed to create TCP handled", vim.log.levels.ERROR, { title = "Spring Boot" })
+          return
+      end
+      tcp:connect("127.0.0.1", 5005, function(err)
+        if not err then
+          tcp:close()
+          vim.schedule(function()
+            vim.notify(
+              "JVM ready — attaching debugger…",
+              vim.log.levels.INFO, { title = "Spring Boot" })
+            -- require("dap").run({
+            --   type     = "java",
+            --   name     = "Attach Spring Boot",
+            --   request  = "attach",
+            --   hostName = "localhost",
+            --   port     = 5005,
+            --   timeout  = 30000,
+            -- })
+            require("dap").continue()
+          end)
+        elseif attempts < 40 then
+          tcp:close()
+          vim.defer_fn(try_attach, 500)
+        else
+          tcp:close()
+          vim.schedule(function()
+            vim.notify(
+              "Timed out waiting for JVM on :5005",
+              vim.log.levels.ERROR, { title = "Spring Boot" })
+          end)
+        end
+      end)
+    end
+    vim.defer_fn(try_attach, 2000)
+  end, opts)
 
   -- ── Spring Boot (<leader>js…) ─────────────────────────────────────────────
   set("n", "<leader>jsd", function()
@@ -406,8 +402,6 @@ end
 
 -- ── Start jdtls ───────────────────────────────────────────────────────────────
 ---@diagnostic disable-next-line: undefined-field
--- ── Capabilities (must be passed explicitly — vim.lsp.config["*"] does NOT
--- reach jdtls because start_or_attach uses vim.lsp.start(), not vim.lsp.enable())
 local capabilities = vim.tbl_deep_extend("force",
   vim.lsp.protocol.make_client_capabilities(),
   {
@@ -441,26 +435,71 @@ jdtls.start_or_attach({
         extendedClientCapabilities = extCaps,
     },
     handlers = {
-        ["language/status"] = function() end,
-        ["$/progress"]      = function() end,
+      ["language/status"] = function(_, result)
+        if not result or not result.message then return end
+        local msg = result.message
+
+        if msg:find("Starting") then
+          vim.g.java_lsp_status = " Starting…"
+
+        elseif msg:find("Indexing") then
+          local pct = msg:match("(%d+)%%")
+          vim.g.java_lsp_status = pct
+            and (" Indexing " .. pct .. "%%")
+            or  " Indexing…"
+          vim.cmd.redrawstatus()
+
+        elseif msg:find("ServiceReady") or msg:find("Ready") then
+          vim.g.java_lsp_status = " Ready"
+          vim.cmd.redrawstatus()
+          vim.notify(
+            "jdtls is ready — " .. vim.fn.fnamemodify(root_dir, ":t"),
+            vim.log.levels.INFO,
+            { title = "Java LSP", timeout = 3000 })
+
+        elseif msg:find("[Ee]rror") then
+          vim.g.java_lsp_status = " Error"
+          vim.cmd.redrawstatus()
+          vim.notify(
+            "jdtls error: " .. msg,
+            vim.log.levels.ERROR,
+            { title = "Java LSP" })
+        end
+      end,
+
+      ["$/progress"] = function(_, result)
+        if not result then return end
+        local value = result.value or {}
+
+        if value.kind == "begin" then
+          vim.g.java_lsp_status = " " .. (value.title or "Working…")
+          vim.cmd.redrawstatus()
+
+        elseif value.kind == "report" then
+          local pct = value.percentage
+          local msg = value.message or value.title or ""
+          vim.g.java_lsp_status = pct
+            and string.format(" %s %d%%", msg ~= "" and msg or "Indexing", pct)
+            or  (" " .. (msg ~= "" and msg or "Working…"))
+          vim.cmd.redrawstatus()
+
+        elseif value.kind == "end" then
+          vim.defer_fn(function()
+            if vim.g.java_lsp_status ~= " Ready" then
+              vim.g.java_lsp_status = " Ready"
+              vim.cmd.redrawstatus()
+            end
+          end, 500)
+        end
+      end,
     },
     settings = (vim.lsp.config["jdtls"] or {}).settings or {},
 })
 
 -- ── Start Java Dap ───────────────────────────────────────────────────────────────
-local ok, dap = pcall(require, "dap"); if not ok then return end
+local ok_dap, dap = pcall(require, "dap"); if not ok_dap then return end
 
--- Register Java adapter (handled by nvim-jdtls, but ensure it exists)
-if not dap.adapters.java then
-  dap.adapters.java = function(cb)
-    require("jdtls").execute_command({
-      command = "vscode.java.startDebugSession",
-    }, function(err, port)
-      assert(not err, vim.inspect(err))
-      cb({ type="server", host="127.0.0.1", port=port })
-    end)
-  end
-end
+if not ok_dap then return end
 
 dap.configurations.java = {
   -- ── Attach to running JVM ───────────────────────────────────────────
@@ -470,7 +509,9 @@ dap.configurations.java = {
     request  = "attach",
     hostName = "localhost",
     port     = 5005,
+    timeout  = 30000,
   },
+  -- Attach with a custom port (ports on lauch)
   {
     name     = " Attach (custom port)",
     type     = "java",
@@ -479,8 +520,10 @@ dap.configurations.java = {
     port     = function()
       return tonumber(vim.fn.input({ prompt = "Debug port: ", default = "5005" })) or 5005
     end,
+    timeout  = 30000,
   },
   -- ── Spring Boot ─────────────────────────────────────────────────────
+  -- Used b <leader> jsR (auto-attach via port polling)
   {
     name     = "🍃 Spring Boot: attach (5005)",
     type     = "java",
@@ -491,6 +534,7 @@ dap.configurations.java = {
       return vim.fn.fnamemodify(vim.fn.getcwd(), ":t")
     end,
   },
+  -- Spring Boot running inside Dcoker
   {
     name     = "🍃 Spring Boot: attach (Docker)",
     type     = "java",
@@ -501,8 +545,9 @@ dap.configurations.java = {
     port     = function()
       return tonumber(vim.fn.input({ prompt = "Port: ", default = "5005" })) or 5005
     end,
+    timeout  = 30000,
   },
-  -- ── Remote ──────────────────────────────────────────────────────────
+  -- ── Generic Remote JVM ──────────────────────────────────────────────────────────
   {
     name     = "☁  Remote (custom host:port)",
     type     = "java",
@@ -513,16 +558,17 @@ dap.configurations.java = {
     port     = function()
       return tonumber(vim.fn.input({ prompt = "Remote port: ", default = "5005" })) or 5005
     end,
+    timeout  = 30000,
   },
   -- ── Kubernetes port-forward ──────────────────────────────────────────
+  -- run kubectl port-forward pod/,nam> 5005:5005 first
   {
     name     = "⎈  Kubernetes (port-forward 5005)",
     type     = "java",
     request  = "attach",
     hostName = "127.0.0.1",
     port     = 5005,
-    -- Before using this, run:
-    -- kubectl port-forward pod/<pod-name> 5005:5005
+    timeout  = 30000,
   },
 }
 
