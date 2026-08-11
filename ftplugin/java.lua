@@ -91,9 +91,12 @@ local cmd = {
   "-Declipse.product=org.eclipse.jdt.ls.core.product",
   "-Dlog.protocol=true",
   "-Dlog.level=ALL",
-  "-XX:+AlwaysPreTouch",
+  -- "-XX:+AlwaysPreTouch",
   "-XX:+UseStringDeduplication",
-  "-Xmx4g",
+  -- "-Xmx4g",
+  "-Xms128m",
+  "-Xmx1024m",
+
   -- "-XX:+UseG1GC",
   -- "-XX:GCTimeRatio=4",
   -- "-XX:AdaptiveSizePolicyWeight=90",
@@ -571,5 +574,4 @@ dap.configurations.java = {
     timeout  = 30000,
   },
 }
-
 

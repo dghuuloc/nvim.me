@@ -15,4 +15,3 @@ vim.keymap.set("n", "<leader>ff", require("fzf-lua").files, {desc = "[F]zf [F]il
 vim.keymap.set("n", "<leader>fg", require("fzf-lua").live_grep, {desc = "[F]ind by [G]rep"})
 -- set a vim motion to search Open Buffers
 vim.keymap.set("n", "<leader>fb", require("fzf-lua").buffers, { desc = '[F]ind Existing [B]uffers' })
-

@@ -31,21 +31,3 @@ if ok_mkv then
   },
     })
 end
-
--- Asciidoc
-local ok_asciidoc, asciidoc = pcall(require, "asciidoc")
-if ok_asciidoc then
-    asciidoc.setup({
-        preview = {
-            enable = true,
-            live_reload = true,
-            mode = "browser",
-            term_renderer = "w3m",
-            term_split = "vsplit",
-            term_width = 80,
-            port = 8765,
-            refresh = 2,
-            auto_open = true,
-        }
-    })
-end

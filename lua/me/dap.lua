@@ -312,4 +312,3 @@ if vim.fn.filereadable(codelldb_exe) == 1 then
   }
   dap.configurations.c = dap.configurations.cpp
 end
-
