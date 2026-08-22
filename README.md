@@ -173,18 +173,6 @@ F5           debug
 <leader>pa   pytest all
 ```
 
----
-## Install languager server extension via mason
-- :MasonInstall jdtls java-debug-adapter js-debug-adapter java-test
-
----
-## How do I install a package in Neovim without a package manager?
-In Neovim, we can install plugins into `~/.config/nvim/pack/FOOBAR/start/` (replacing `FOOBAR` with any directory name you choose), similarly to how we can use [Vim 8.0's native support for packages](https://vi.stackexchange.com/questions/9522/what-is-the-vim8-package-feature-and-how-should-i-use-it).
-
-Alternatively, we can also install plugins into ~/.local/share/nvim/site/pack/FOOBAR/start/ (replacing FOOBAR with any directory name you choose).
-
-To find the full list of places where you we put a package, run `:set packpath?` . We can install packages in the `pack/FOOBAR/start/` subdirectory of each one of these directories listed by that command, replacing `FOOBAR` with any directory name you like. (If we've [configured Neovim to load Vim configuration](https://neovim.io/doc/user/nvim.html#nvim-from-vim), then we will probably find ~/.vim in the list of directories, which means we can also put plugins in ~/.vim/pack/FOOBAR/start/ , just like for Vim.)
-
 ## References
 * [Vim Cheat Sheet](https://vim.rtorr.com/)
 * [Whats new in neovim 0.12](https://dotfiles.substack.com/p/whats-new-in-neovim-012)

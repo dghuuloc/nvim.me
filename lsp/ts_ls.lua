@@ -57,8 +57,6 @@ return {
   },
 
   settings = {
-    -- Requested by typescript-language-server for operations
-    -- such as formatting-related edits and organize imports.
     formattingOptions = {
       tabSize = 4,
       insertSpaces = true,

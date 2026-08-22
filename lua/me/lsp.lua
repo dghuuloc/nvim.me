@@ -81,29 +81,34 @@ end
 
 -- ── Diagnostic configuration ─────────────────────────────────────────────────
 vim.diagnostic.config({
-  virtual_text     = {
-    prefix = "●",
-    spacing = 4,
-    severity = { min = vim.diagnostic.severity.WARN },
-  },
+  -- virtual_text     = {
+  --   prefix = "●",
+  --   spacing = 4,
+  --   severity = { min = vim.diagnostic.severity.WARN },
+  -- },
+  virtual_text = false,
 
   -- 0.12: virtual_lines — shows diagnostics as full lines below code.
   -- Toggle with <leader>xL. Off by default to avoid clutter.
   virtual_lines    = false,
 
-  signs            = {
-    text = {
-      [vim.diagnostic.severity.ERROR] = " ",
-      [vim.diagnostic.severity.WARN]  = " ",
-      [vim.diagnostic.severity.INFO]  = "",
-      [vim.diagnostic.severity.HINT]  = "",
-    },
-    numhl = {
-      [vim.diagnostic.severity.ERROR] = "DiagnosticSignError",
-      [vim.diagnostic.severity.WARN] = "DiagnosticSignWarn",
-    }
-  },
-  underline        = { severity = { min = vim.diagnostic.severity.WARN } },
+  -- signs            = {
+  --   text = {
+  --     [vim.diagnostic.severity.ERROR] = " ",
+  --     [vim.diagnostic.severity.WARN]  = " ",
+  --     [vim.diagnostic.severity.INFO]  = "",
+  --     [vim.diagnostic.severity.HINT]  = "",
+  --   },
+  --   numhl = {
+  --     [vim.diagnostic.severity.ERROR] = "DiagnosticSignError",
+  --     [vim.diagnostic.severity.WARN] = "DiagnosticSignWarn",
+  --   }
+  -- },
+  signs = false,
+
+  -- underline        = { severity = { min = vim.diagnostic.severity.WARN } },
+  underline = false,
+
   update_in_insert = false,
   severity_sort    = true,
   float            = {
@@ -118,6 +123,7 @@ vim.diagnostic.config({
       return src .. d.message .. code
     end,
   },
+
 })
 
 do
@@ -356,10 +362,9 @@ vim.lsp.enable({
 -- <C-Space>: manually trigger completion
 vim.keymap.set("i", "<C-Space>", function()
   if vim.fn.pumvisible() == 1 then
-    -- close if already open
     return vim.api.nvim_replace_termcodes("<C-e>", true, false, true)
   else
-    vim.lsp.completion.trigger()
+    vim.lsp.completion.get()
   end
 end, { silent = true, desc = "trigger / close completion" })
 
@@ -372,7 +377,7 @@ vim.keymap.set("i", "<C-l>", function()
     end
     vim.api.nvim_feedkeys(vim.keycode("<C-y>"), "n", true)
   elseif next(vim.lsp.get_clients({ bufnr = 0 })) then
-    vim.lsp.completion.trigger()
+    vim.lsp.completion.get()
   else
     vim.api.nvim_feedkeys(vim.keycode("<C-x><C-n>"), "n", true)
   end

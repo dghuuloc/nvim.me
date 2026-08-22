@@ -115,7 +115,9 @@ vim.keymap.set("n", "<leader>re", "<cmd>restart<cr>",
 )
 
 -- Paste without replacing paste with what you are highlighted over
-vim.keymap.set("n", "<leader>p", '"_dP')
+vim.keymap.set("x", "<leader>p", [["_dP]], {
+  desc = "Paste without replacing register",
+})
 
 -- Exit terminal with Esc
 vim.keymap.set("t", "<Esc>", "<C-\\><C-N>")
